@@ -47,6 +47,8 @@ void process_ula() {
         case 0b1000: // JN
             j_cond = operand_a.read() < 0;
             break;
+        default:
+            break;
     }
     result.write(res);
     jump_cond.write(j_cond);
