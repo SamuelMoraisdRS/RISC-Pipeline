@@ -7,17 +7,19 @@ const int OP_SW     = 0x2B;
 const int OP_BEQ    = 0x04; 
 const int OP_J      = 0x02; 
 
-SC_MODULE(ControlUnit) {
+SC_MODULE(UnidadeControle) {
     // Portas de Entrada
     sc_in_clk clk;
     sc_in<bool> reset;
     sc_in<sc_uint<6>> opcode; // Opcode da instrucao -> Vai definir a transicao de estados que sera feita
 
     // Sinais de Controle
+    // TODO : Definir os sinais de controle enviados a OP 
     sc_out<bool> RegDst, RegWrite, ALUSrcA, MemRead, MemWrite, MemtoReg, IRWrite, PCWrite, IorD;
     sc_out<sc_uint<2>> ALUSrcB, ALUOp, PCSource; // Sinais enviados aos muxes
 
     // Definição dos Estados
+    // TODO : Definir os estados
     enum State { FETCH, DECODE, EXECUTE_R, R_COMPLETION, MEM_ADDR, MEM_READ, MEM_WRITE, WRITE_BACK, BRANCH, JUMP };
     sc_signal<State> current_state, next_state; 
 
@@ -125,6 +127,7 @@ SC_MODULE(ControlUnit) {
     }
 };
 
+// Simulacao
 int sc_main(int argc, char* argv[]) {
     // Entradas
     sc_clock clk("clk", 5, SC_NS);
