@@ -11,16 +11,17 @@ SC_MODULE(UnidadeControle) {
     // Portas de Entrada
     sc_in_clk clk;
     sc_in<bool> reset;
-    sc_in<sc_uint<6>> opcode; // Opcode da instrucao -> Vai definir a transicao de estados que sera feita
+    sc_in<sc_uint<5>> opcode; // Opcode da instrucao -> Vai definir a transicao de estados que sera feita
 
     // Sinais de Controle
-    // TODO : Definir os sinais de controle enviados a OP 
-    sc_out<bool> RegDst, RegWrite, ALUSrcA, MemRead, MemWrite, MemtoReg, IRWrite, PCWrite, IorD;
-    sc_out<sc_uint<2>> ALUSrcB, ALUOp, PCSource; // Sinais enviados aos muxes
+    // TODO: Definir os sinais de controle enviados a OP 
+    sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, mem_to_reg, store_bd_or_dir, reg_write, mem_read, mem_write;
+    sc_out<sc_uint<2>> reg_dest, pc_source; // Sinais enviados aos muxes
+    sc_out<sc_uint<4>> alu_op;
 
     // Definição dos Estados
     // TODO : Definir os estados
-    enum State { FETCH, DECODE, EXECUTE_R, R_COMPLETION, MEM_ADDR, MEM_READ, MEM_WRITE, WRITE_BACK, BRANCH, JUMP };
+    enum State { FETCH, DECODE, T1, T1_CMPL, T2, T2_CMPL, T3, T3_LD, T3_LD_CMPL, T3_ST, T3_ST_CMPL, T4, T4_LD, T4_LD_CMPL, T4_ST, T4_ST_CMPL, T5, T6, JZ, JN};
     sc_signal<State> current_state, next_state; 
 
     void combined_logic() {
@@ -29,26 +30,24 @@ SC_MODULE(UnidadeControle) {
         } else {
             current_state.write(next_state.read());
         }
-        sc_uint<6> op = opcode.read();
+        sc_uint<5> op = opcode.read();
         // Definindo sinais de controle dos estados
         switch (current_state.read())
         {
         case FETCH:
-            ALUSrcB.write(0b01);   
-            ALUSrcA.write(false);   
-            ALUOp.write(0b00);     
-            PCSource.write(0b00); 
-            PCWrite.write(true);
-            IorD.write(false); // Mudar para um bit
-            MemRead.write(true);
-            next_state.write(DECODE);
+            reg_dest.write(0b00);
+            pc_source.write(0b00);
+            imed_size.write(false);
+            alu_src_b.write(false);
+            addr_bd_or_dir.write(false);
+            mem_to_reg.write(false);
+            store_bd_or_dir.write(false);
+            alu_op.write(0b0000);
+            reg_write.write(false);
+            mem_read.write(false);
+            mem_write.write(false);
             break;
         case DECODE:
-            ALUSrcB.write(0b11);   
-            ALUOp.write(0b00);     
-            PCSource.write(0b00); 
-            ALUSrcA.write(false);   
-            next_state.write(DECODE);
             // Transicao de estado
             if (op == OP_R_TYPE) {
                 next_state.write(State::EXECUTE_R);

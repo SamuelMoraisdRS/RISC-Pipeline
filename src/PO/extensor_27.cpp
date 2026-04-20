@@ -8,7 +8,7 @@
 SC_MODULE(EXTENSOR_27) {
         
     // Entrada
-    sc_in<sc_int<<27>> imm; /// Immediato
+    sc_in<sc_int<27>> imm; /// Immediato
 
     // Saidas
     sc_out<sc_int<32>> result; /// Resultado da operação aritmetica
@@ -19,9 +19,10 @@ SC_MODULE(EXTENSOR_27) {
         result.write(imm.read());
     };
 
-    SC_CTOR(EXTENSOR_SINAL) {
+    SC_CTOR(EXTENSOR_27) {
         SC_METHOD(process_extensor_sinal);
         sensitive << imm;
     }
-}
+};
+
 #endif
