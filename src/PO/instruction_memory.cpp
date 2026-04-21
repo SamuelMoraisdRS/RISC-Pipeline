@@ -1,5 +1,5 @@
-#ifndef MEMORIA_INSTRUCOES_H
-#define MEMORIA_INSTRUCOES_H
+#ifndef INSTRUCTION_MEMORY_H
+#define INSTRUCTION_MEMORY_H
 
 #include <systemc.h>
 #include <vector>
