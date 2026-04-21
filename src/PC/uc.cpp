@@ -49,6 +49,7 @@ SC_MODULE(ControlUnit) {
             reg_write.write(false);
             mem_read.write(false);
             mem_write.write(false);
+    next_state.write(DECODE);
             break;
         case DECODE:
             // Transicao de estado
@@ -196,6 +197,7 @@ SC_MODULE(ControlUnit) {
     }
 };
 
+#ifndef MODO_TESTE
 // Simulacao
 int sc_main(int argc, char* argv[]) {
     // Entradas
@@ -250,57 +252,67 @@ int sc_main(int argc, char* argv[]) {
     // Simulacao
     cout << "@" << sc_time_stamp() << " Iniciando Simulacao..." << endl;
     
-    reset.write(true);
-    sc_start(15, SC_NS); // Pulso de reset
-    reset.write(false);
+    auto wait_cycle = [&]() { sc_start(5, SC_NS); };
+
+    auto sync_reset = [&]() {
+        reset.write(true);
+        wait_cycle(); // Pulso de reset para ir para FETCH
+        reset.write(false);
+    };
 
     // Comecando simulacao com instrucao de tipo R
     cout << "@" << sc_time_stamp() << " Testando Tipo 1" << endl;
+    sync_reset();
     opcode.write(OP_TYPE_1); 
-    sc_start(50, SC_NS); // Tempo suficiente para passar por todos os estados da R
-
-    reset.write(true);
-    sc_start(15, SC_NS); // Pulso de reset
-    reset.write(false);
+    wait_cycle(); // FETCH -> DECODE
+    wait_cycle(); // DECODE -> T1
+    wait_cycle(); // T1 -> T1_CMPL
+    wait_cycle(); // T1_CMPL -> FETCH
 
     // Testando instrucao LW
     cout << "@" << sc_time_stamp() << " Testando Tipo 2" << endl;
+    sync_reset();
     opcode.write(OP_TYPE_2);
-    sc_start(50, SC_NS);
-
-    reset.write(true);
-    sc_start(15, SC_NS); // Pulso de reset
-    reset.write(false);
+    wait_cycle(); // FETCH -> DECODE
+    wait_cycle(); // DECODE -> T2
+    wait_cycle(); // T2 -> T2_CMPL
+    wait_cycle(); // T2_CMPL -> FETCH
 
     cout << "@" << sc_time_stamp() << " Testando Tipo 3" << endl;
+    sync_reset();
     opcode.write(OP_TYPE_3);
-    sc_start(60, SC_NS);
-
-    reset.write(true);
-    sc_start(15, SC_NS); // Pulso de reset
-    reset.write(false);
+    wait_cycle(); // FETCH -> DECODE
+    wait_cycle(); // DECODE -> T3
+    wait_cycle(); // T3 -> T3_LD ou T3_ST
+    wait_cycle(); // T3_XX -> T3_XX_CMPL
+    wait_cycle(); // T3_XX_CMPL -> FETCH
 
     cout << "@" << sc_time_stamp() << " Testando Tipo 4" << endl;
+    sync_reset();
     opcode.write(OP_TYPE_4);
-    sc_start(60, SC_NS);
-
-    reset.write(true);
-    sc_start(15, SC_NS); // Pulso de reset
-    reset.write(false);
+    wait_cycle(); // FETCH -> DECODE
+    wait_cycle(); // DECODE -> T4
+    wait_cycle(); // T4 -> T4_LD ou T4_ST
+    wait_cycle(); // T4_XX -> T4_XX_CMPL
+    wait_cycle(); // T4_XX_CMPL -> FETCH
 
     cout << "@" << sc_time_stamp() << " Testando Tipo 5" << endl;
+    sync_reset();
     opcode.write(OP_TYPE_5);
-    sc_start(40, SC_NS);
-
-    reset.write(true);
-    sc_start(15, SC_NS); // Pulso de reset
-    reset.write(false);
+    wait_cycle(); // FETCH -> DECODE
+    wait_cycle(); // DECODE -> T5
+    wait_cycle(); // T5 -> FETCH
 
     cout << "@" << sc_time_stamp() << " Testando Tipo 6" << endl;
+    sync_reset();
     opcode.write(OP_TYPE_6);
-    sc_start(50, SC_NS);
+    wait_cycle(); // FETCH -> DECODE
+    wait_cycle(); // DECODE -> T6
+    wait_cycle(); // T6 -> JZ ou JN
+    wait_cycle(); // JX -> FETCH
 
     sc_close_vcd_trace_file(wf);
-    cout << "@" << sc_time_stamp() << " Simulação finalizada. Arquivo simulation.vcd gerado." << endl;
+    cout << "@" << sc_time_stamp() << " Simulação finalizada. Arquivo .vcd gerado" << endl;
     return 0;
 }
+#endif

@@ -39,4 +39,42 @@ SC_MODULE(MUX_3) {
     }
 };
 
+#ifndef MODO_TESTE
+// Simulacao
+int sc_main(int argc, char* argv[]) {
+    sc_signal<sc_int<32>> in0, in1, in2, out;
+    sc_signal<sc_uint<2>> sel;
+
+    MUX_3 mux("mux");
+    mux.in0(in0);
+    mux.in1(in1);
+    mux.in2(in2);
+    mux.sel(sel);
+    mux.out(out);
+
+    sc_trace_file *wf = sc_create_vcd_trace_file("simulation_mux_3");
+    sc_trace(wf, in0, "in0");
+    sc_trace(wf, in1, "in1");
+    sc_trace(wf, in2, "in2");
+    sc_trace(wf, sel, "sel");
+    sc_trace(wf, out, "out");
+
+    in0.write(10);
+    in1.write(20);
+    in2.write(30);
+
+    sel.write(0b00);
+    sc_start(10, SC_NS);
+
+    sel.write(0b01);
+    sc_start(10, SC_NS);
+
+    sel.write(0b10);
+    sc_start(10, SC_NS);
+
+    sc_close_vcd_trace_file(wf);
+    return 0;
+}
+#endif
+
 #endif

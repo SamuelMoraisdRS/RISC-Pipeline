@@ -24,4 +24,30 @@ SC_MODULE(EXTENSOR_19) {
         sensitive << imm;
     }
 };
+
+#ifndef MODO_TESTE
+// Simulacao
+int sc_main(int argc, char* argv[]) {
+    sc_signal<sc_int<19>> imm;
+    sc_signal<sc_int<32>> result;
+
+    EXTENSOR_19 ext("ext");
+    ext.imm(imm);
+    ext.result(result);
+
+    sc_trace_file *wf = sc_create_vcd_trace_file("simulation_extensor_19");
+    sc_trace(wf, imm, "imm");
+    sc_trace(wf, result, "result");
+
+    imm.write(15);
+    sc_start(10, SC_NS);
+
+    imm.write(-5);
+    sc_start(10, SC_NS);
+
+    sc_close_vcd_trace_file(wf);
+    return 0;
+}
+#endif
+
 #endif

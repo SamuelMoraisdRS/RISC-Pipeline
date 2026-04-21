@@ -1,3 +1,4 @@
+#define MODO_TESTE
 #include <systemc.h>
 #include "mux_3.cpp"
 

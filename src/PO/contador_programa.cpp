@@ -41,4 +41,46 @@ SC_CTOR(ContadorPrograma) {
 }
 };
 
+#ifndef MODO_TESTE
+// Simulacao
+int sc_main(int argc, char* argv[]) {
+    sc_clock clk("clk", 5, SC_NS);
+    sc_signal<bool> reset;
+    sc_signal<bool> load_jump;
+    sc_signal<sc_int<32>> pc_jump;
+    sc_signal<sc_int<32>> pc_out;
+
+    ContadorPrograma pc("pc");
+    pc.clk(clk);
+    pc.reset(reset);
+    pc.load_jump(load_jump);
+    pc.pc_jump(pc_jump);
+    pc.pc_out(pc_out);
+
+    sc_trace_file *wf = sc_create_vcd_trace_file("simulation_contador");
+    sc_trace(wf, clk, "clk");
+    sc_trace(wf, reset, "reset");
+    sc_trace(wf, load_jump, "load_jump");
+    sc_trace(wf, pc_jump, "pc_jump");
+    sc_trace(wf, pc_out, "pc_out");
+
+    reset.write(true);
+    sc_start(10, SC_NS);
+    reset.write(false);
+    
+    load_jump.write(false);
+    sc_start(15, SC_NS);
+
+    load_jump.write(true);
+    pc_jump.write(100);
+    sc_start(10, SC_NS);
+
+    load_jump.write(false);
+    sc_start(10, SC_NS);
+
+    sc_close_vcd_trace_file(wf);
+    return 0;
+}
+#endif
+
 #endif
