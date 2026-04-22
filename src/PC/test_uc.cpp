@@ -138,8 +138,6 @@ int sc_main(int argc, char* argv[]) {
     sc_signal<sc_uint<4>> s_alu_op;
 
     ControlUnit control("ControlUnit");
-    control.clk(clk);
-    control.reset(sig_reset);
     control.opcode(sig_opcode);
     control.imed_size(s_imed_size);
     control.alu_src_b(s_alu_src_b);
@@ -186,7 +184,6 @@ int sc_main(int argc, char* argv[]) {
     sc_trace(wf, s_reg_dest, "RegDest");
     sc_trace(wf, s_pc_source, "PCSource");
     sc_trace(wf, s_alu_op, "AluOp");
-    sc_trace(wf, control.current_state, "CurrentState");
 
     sc_start();
 

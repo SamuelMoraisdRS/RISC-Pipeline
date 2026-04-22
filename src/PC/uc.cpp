@@ -10,190 +10,98 @@ const int OP_TYPE_6 = 0b10011;
 
 SC_MODULE(ControlUnit) {
     // Portas de Entrada
-    sc_in_clk clk;
-    sc_in<bool> reset;
     sc_in<sc_uint<5>> opcode; // Opcode da instrucao -> Vai definir a transicao de estados que sera feita
 
     // Sinais de Controle
-    // TODO: Definir os sinais de controle enviados a OP 
     sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, mem_to_reg, store_bd_or_dir, reg_write, mem_read, mem_write;
     sc_out<sc_uint<2>> reg_dest, pc_source; // Sinais enviados aos muxes
     sc_out<sc_uint<4>> alu_op;
 
-    // Definição dos Estados
-    // TODO : Definir os estados
-    enum State { FETCH, DECODE, T1, T1_CMPL, T2, T2_CMPL, T3, T3_LD, T3_LD_CMPL, T3_ST, T3_ST_CMPL, T4, T4_LD, T4_LD_CMPL, T4_ST, T4_ST_CMPL, T5, T6, JZ, JN};
-    sc_signal<State> current_state, next_state;
-    
-    void state_register() {
-        if (reset.read())
-            current_state.write(FETCH);
-        else
-            current_state.write(next_state.read());
-    }
-
     void combined_logic() {
         sc_uint<5> op = opcode.read();
-        // Definindo sinais de controle dos estados
-        switch (current_state.read())
-        {
-        case FETCH:
-            reg_dest.write(0b00);
-            pc_source.write(0b00);
-            imed_size.write(false);
-            alu_src_b.write(false);
-            addr_bd_or_dir.write(false);
-            mem_to_reg.write(false);
-            store_bd_or_dir.write(false);
-            alu_op.write(0b0000);
-            reg_write.write(false);
-            mem_read.write(false);
-            mem_write.write(false);
-    next_state.write(DECODE);
-            break;
-        case DECODE:
-            // Transicao de estado
-            if (op >= 0b00000 && op <= 0b00110) {
-                next_state.write(State::T1);
-            } 
-            else if (op <= 0b01101) {
-                next_state.write(State::T2); 
-            }
-            else if (op <= 0b01111) {
-                next_state.write(State::T3);
-            }
-            else if (op <= 0b10001) {
-                next_state.write(State::T4);
-            }
-            else if (op == 0b10010) {
-                next_state.write(State::T5);
-            }
-            else if (op <= 0b10100) {
-                next_state.write(State::T6);
-            }
-            break;
-        case T1:
+        
+        reg_dest.write(0b00);
+        pc_source.write(0b00);
+        imed_size.write(false);
+        alu_src_b.write(false);
+        addr_bd_or_dir.write(false);
+        mem_to_reg.write(false);
+        store_bd_or_dir.write(false);
+        alu_op.write(0b0000);
+        reg_write.write(false);
+        mem_read.write(false);
+        mem_write.write(false);
+        
+        if (op >= 0b00000 && op <= 0b00110) {
             alu_src_b.write(false);
             alu_op.write(opcode.read());
-            next_state.write(T1_CMPL);
-            break;
-        case T1_CMPL:
             reg_dest.write(0b00);
             reg_write.write(true);
             mem_to_reg.write(false);
-            next_state.write(FETCH);
-            break;
-        case T2:
+        } 
+        else if (op <= 0b01101) {
             alu_src_b.write(true);
             alu_op.write(opcode.read() - 7);
-            next_state.write(T2_CMPL);
-            break;
-        case T2_CMPL:
             reg_dest.write(0b01);
             reg_write.write(true);
             mem_to_reg.write(false);
-            next_state.write(FETCH);
-            break;
-        case T3:
+        }
+        else if (op == 0b01110) {
             alu_src_b.write(true);
-            alu_op.write(0b0000); // Vai mandar uma soma para a alu, pois o modo de endereçamento é base+deslocamento
-            if (op == 0b01110) {
-                next_state.write(State::T3_LD); 
-            } 
-            else if (op == 0b01111) {
-                next_state.write(State::T3_ST); 
-            }
-            break;
-        case T3_LD:
+            alu_op.write(0b0000);
             mem_read.write(true);
             mem_write.write(false);
             addr_bd_or_dir.write(false);
-            next_state.write(T3_LD_CMPL);
-            break;
-        case T3_LD_CMPL:
             reg_dest.write(0b01);
             reg_write.write(true);
             mem_to_reg.write(true);
-            next_state.write(FETCH);
-            break;
-        case T3_ST:
+        }
+        else if (op == 0b01111) {
+            alu_src_b.write(true);
+            alu_op.write(0b0000);
             mem_read.write(false);
             mem_write.write(true);
             addr_bd_or_dir.write(false);
             store_bd_or_dir.write(false);
-            next_state.write(T3_ST_CMPL);
-            break;
-        case T3_ST_CMPL:
             reg_write.write(false);
-            next_state.write(FETCH);
-            break;
-        case T4:
+        }
+        else if (op == 0b10000) {
             alu_src_b.write(true);
             imed_size.write(true);
-            if (op == 0b10000) {
-                next_state.write(State::T4_LD); 
-            } 
-            else if (op == 0b10001) {
-                next_state.write(State::T4_ST); 
-            }
-            break;
-        case T4_LD:
             mem_read.write(true);
             mem_write.write(false);
             addr_bd_or_dir.write(true);
-            next_state.write(State::T4_LD_CMPL); 
-            break;
-        case T4_LD_CMPL:
             reg_dest.write(0b10);
             reg_write.write(true);
             mem_to_reg.write(true);
-            next_state.write(State::FETCH); 
-            break;
-        case T4_ST:
+        }
+        else if (op == 0b10001) {
+            alu_src_b.write(true);
+            imed_size.write(true);
             mem_read.write(false);
             mem_write.write(true);
             addr_bd_or_dir.write(true);
             store_bd_or_dir.write(true);
-            next_state.write(State::T4_ST_CMPL);
-            break; 
-        case T4_ST_CMPL:
             reg_write.write(false);
-            next_state.write(State::FETCH);
-            break;
-        case T5:
+        }
+        else if (op == 0b10010) {
             pc_source.write(0b01);
-            next_state.write(State::FETCH);
-            break;
-        case T6:
+        }
+        else if (op == 0b10011) {
             imed_size.write(true);
-            if(op == 0b10011) {
-                next_state.write(State::JZ);
-            } else if(op == 0b10100) {
-                next_state.write(State::JN);
-            }
-            break;
-        case JZ: 
             alu_op.write(0b0111);
             pc_source.write(0b10);
-            next_state.write(State::FETCH);
-            break;
-        case JN: 
+        }
+        else if (op == 0b10100) {
+            imed_size.write(true);
             alu_op.write(0b1000);
             pc_source.write(0b10);
-            next_state.write(State::FETCH);
-            break;
-        default:
-            break;
         }
-
     }
 
     SC_CTOR(ControlUnit) {
-        SC_METHOD(state_register);
-        sensitive << clk.pos() << reset;
-
         SC_METHOD(combined_logic);
-        sensitive << current_state << opcode;
+        sensitive << opcode;
     }
 };
 
@@ -212,8 +120,6 @@ int sc_main(int argc, char* argv[]) {
 
     // Instanciacao do circuito
     ControlUnit control("ControlUnit");
-    control.clk(clk);
-    control.reset(reset);
     control.opcode(opcode);
 
     // Conectando saidas
@@ -246,8 +152,6 @@ int sc_main(int argc, char* argv[]) {
     sc_trace(wf, s_reg_dest, "RegDest");
     sc_trace(wf, s_pc_source, "PCSource");
     sc_trace(wf, s_alu_op, "AluOp");
-
-    sc_trace(wf, control.current_state, "CurrentState");
 
     // Simulacao
     cout << "@" << sc_time_stamp() << " Iniciando Simulacao..." << endl;
