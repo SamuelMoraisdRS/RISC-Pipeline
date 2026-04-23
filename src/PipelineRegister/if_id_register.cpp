@@ -1,0 +1,40 @@
+#ifndef IF_ID_REGISTER_H
+#define IF_ID_REGISTER_H
+
+#include <systemc.h>
+
+SC_MODULE(IfIdRegister) {
+
+    // Portas de Entrada
+    sc_in<bool> clk;
+    sc_in<bool> reset;
+    sc_in<bool> if_id_write; // Importante para lidar com Hazards futuramente
+
+    sc_in<sc_uint<32>> next_instruction_address_in;
+    sc_in<sc_uint<32>> instruction_in;
+
+    // Portas de Saída
+    sc_out<sc_uint<32>> next_instruction_address_out;
+    sc_out<sc_uint<32>> instruction_out;
+
+private:
+
+    void store_information() {
+      if (reset.read()) {
+        next_instruction_address_out.write(0);
+        instruction_out.write(0);
+      } else if(if_id_write.read()) {
+        next_instruction_address_out.write(next_instruction_address_in.read());
+        instruction_out.write(instruction_in.read());
+      }
+    }
+
+public:
+
+    SC_CTOR(IfIdRegister) {
+        SC_METHOD(store_information);
+        sensitive << clk.pos();
+    }
+};
+
+#endif 
