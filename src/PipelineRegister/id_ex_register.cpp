@@ -1,5 +1,5 @@
-#ifndef IF_ID_REGISTER_H
-#define IF_ID_REGISTER_H
+#ifndef ID_EX_REGISTER_H
+#define ID_EX_REGISTER_H
 
 #include <systemc.h>
 
