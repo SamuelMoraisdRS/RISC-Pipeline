@@ -109,8 +109,7 @@ SC_MODULE(ControlUnit) {
 // Simulacao
 int sc_main(int argc, char* argv[]) {
     // Entradas
-    sc_clock clk("clk", 5, SC_NS);
-    sc_signal<bool> reset;
+    sc_clock clk("clk", 10, SC_NS);
     sc_signal<sc_uint<5>> opcode;
 
     // Saida
@@ -138,7 +137,6 @@ int sc_main(int argc, char* argv[]) {
     // Configuracao da simulacao
     sc_trace_file *wf = sc_create_vcd_trace_file("simulation");
     sc_trace(wf, clk, "clk");
-    sc_trace(wf, reset, "reset");
     sc_trace(wf, opcode, "opcode");
     
     sc_trace(wf, s_imed_size, "ImedSize");
@@ -154,66 +152,40 @@ int sc_main(int argc, char* argv[]) {
     sc_trace(wf, s_alu_op, "AluOp");
 
     // Simulacao
-    cout << "@" << sc_time_stamp() << " Iniciando Simulacao..." << endl;
+    cout << "@" << sc_time_stamp() << " Iniciando Simulacao da Decodificacao (Pipeline)..." << endl;
     
-    auto wait_cycle = [&]() { sc_start(5, SC_NS); };
-
-    auto sync_reset = [&]() {
-        reset.write(true);
-        wait_cycle(); // Pulso de reset para ir para FETCH
-        reset.write(false);
+    auto test_opcode = [&](int op, const char* name) {
+        opcode.write(op);
+        sc_start(10, SC_NS); // Avança o tempo para atualizar os sinais combinacionais e escrever no VCD
+        
+        cout << "----------------------------------------" << endl;
+        cout << "@" << sc_time_stamp() << " Instrucao: " << name << " (Opcode: " << sc_uint<5>(op).to_string(SC_BIN) << ")" << endl;
+        cout << "  Sinais EX  -> alu_src_b: " << s_alu_src_b.read() 
+             << " | alu_op: " << s_alu_op.read().to_string(SC_BIN) 
+             << " | imed_size: " << s_imed_size.read() 
+             << " | addr_bd_or_dir: " << s_addr_bd_or_dir.read() 
+             << " | reg_dest: " << s_reg_dest.read().to_string(SC_BIN) << endl;
+             
+        cout << "  Sinais MEM -> mem_read: " << s_mem_read.read() 
+             << " | mem_write: " << s_mem_write.read() 
+             << " | store_bd_or_dir: " << s_store_bd_or_dir.read() 
+             << " | pc_source: " << s_pc_source.read().to_string(SC_BIN) << endl;
+             
+        cout << "  Sinais WB  -> reg_write: " << s_reg_write.read() 
+             << " | mem_to_reg: " << s_mem_to_reg.read() << endl;
     };
 
-    // Comecando simulacao com instrucao de tipo R
-    cout << "@" << sc_time_stamp() << " Testando Tipo 1" << endl;
-    sync_reset();
-    opcode.write(OP_TYPE_1); 
-    wait_cycle(); // FETCH -> DECODE
-    wait_cycle(); // DECODE -> T1
-    wait_cycle(); // T1 -> T1_CMPL
-    wait_cycle(); // T1_CMPL -> FETCH
-
-    // Testando instrucao LW
-    cout << "@" << sc_time_stamp() << " Testando Tipo 2" << endl;
-    sync_reset();
-    opcode.write(OP_TYPE_2);
-    wait_cycle(); // FETCH -> DECODE
-    wait_cycle(); // DECODE -> T2
-    wait_cycle(); // T2 -> T2_CMPL
-    wait_cycle(); // T2_CMPL -> FETCH
-
-    cout << "@" << sc_time_stamp() << " Testando Tipo 3" << endl;
-    sync_reset();
-    opcode.write(OP_TYPE_3);
-    wait_cycle(); // FETCH -> DECODE
-    wait_cycle(); // DECODE -> T3
-    wait_cycle(); // T3 -> T3_LD ou T3_ST
-    wait_cycle(); // T3_XX -> T3_XX_CMPL
-    wait_cycle(); // T3_XX_CMPL -> FETCH
-
-    cout << "@" << sc_time_stamp() << " Testando Tipo 4" << endl;
-    sync_reset();
-    opcode.write(OP_TYPE_4);
-    wait_cycle(); // FETCH -> DECODE
-    wait_cycle(); // DECODE -> T4
-    wait_cycle(); // T4 -> T4_LD ou T4_ST
-    wait_cycle(); // T4_XX -> T4_XX_CMPL
-    wait_cycle(); // T4_XX_CMPL -> FETCH
-
-    cout << "@" << sc_time_stamp() << " Testando Tipo 5" << endl;
-    sync_reset();
-    opcode.write(OP_TYPE_5);
-    wait_cycle(); // FETCH -> DECODE
-    wait_cycle(); // DECODE -> T5
-    wait_cycle(); // T5 -> FETCH
-
-    cout << "@" << sc_time_stamp() << " Testando Tipo 6" << endl;
-    sync_reset();
-    opcode.write(OP_TYPE_6);
-    wait_cycle(); // FETCH -> DECODE
-    wait_cycle(); // DECODE -> T6
-    wait_cycle(); // T6 -> JZ ou JN
-    wait_cycle(); // JX -> FETCH
+    // Testes das categorias de instrucoes
+    test_opcode(0b00000, "ADD (Tipo 1 - Aritmetica/Logica com Reg)");
+    test_opcode(0b00001, "SUB (Tipo 1 (testando ALUOP) - Aritmetica/Logica com Reg)");
+    test_opcode(0b00111, "ADDI (Tipo 2 - Aritmetica/Logica com Imediato)");
+    test_opcode(0b01110, "LW (Tipo 3 - Load Direto)");
+    test_opcode(0b01111, "SW (Tipo 3 - Store Direto)");
+    test_opcode(0b10000, "LW_IND (Tipo 4 - Load Indireto)");
+    test_opcode(0b10001, "SW_IND (Tipo 4 - Store Indireto)");
+    test_opcode(0b10010, "JMP (Tipo 5 - Incondicional)");
+    test_opcode(0b10011, "JZ (Tipo 6 - Condicional Zero)");
+    test_opcode(0b10100, "JN (Tipo 6 - Condicional Negativo)");
 
     sc_close_vcd_trace_file(wf);
     cout << "@" << sc_time_stamp() << " Simulação finalizada. Arquivo .vcd gerado" << endl;
