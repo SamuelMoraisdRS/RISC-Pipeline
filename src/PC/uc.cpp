@@ -13,7 +13,7 @@ SC_MODULE(ControlUnit) {
     sc_in<sc_uint<5>> opcode; // Opcode da instrucao -> Vai definir a transicao de estados que sera feita
 
     // Sinais de Controle
-    sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, mem_to_reg, store_bd_or_dir, reg_write, mem_read, mem_write;
+    sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, mem_to_reg, store_bd_or_dir, reg_write, mem_read, mem_write, is_uncond_jump;
     sc_out<sc_uint<2>> reg_dest, pc_source; // Sinais enviados aos muxes
     sc_out<sc_uint<4>> alu_op;
 
@@ -22,6 +22,7 @@ SC_MODULE(ControlUnit) {
         
         reg_dest.write(0b00);
         pc_source.write(0b00);
+        is_uncond_jump.write(false);
         imed_size.write(false);
         alu_src_b.write(false);
         addr_bd_or_dir.write(false);
@@ -86,6 +87,7 @@ SC_MODULE(ControlUnit) {
         }
         else if (op == 0b10010) {
             pc_source.write(0b01);
+            is_uncond_jump.write(true);
         }
         else if (op == 0b10011) {
             imed_size.write(true);
