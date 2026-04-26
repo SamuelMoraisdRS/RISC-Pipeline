@@ -27,7 +27,7 @@ SC_MODULE(ControlUnit) {
         addr_bd_or_dir.write(false);
         mem_to_reg.write(false);
         store_bd_or_dir.write(false);
-        alu_op.write(0b0000);
+        alu_op.write(0b0001);
         reg_write.write(false);
         mem_read.write(false);
         mem_write.write(false);
@@ -48,7 +48,7 @@ SC_MODULE(ControlUnit) {
         }
         else if (op == 0b01110) {
             alu_src_b.write(true);
-            alu_op.write(0b0000);
+            alu_op.write(0b0001);
             mem_read.write(true);
             mem_write.write(false);
             addr_bd_or_dir.write(false);
@@ -58,7 +58,7 @@ SC_MODULE(ControlUnit) {
         }
         else if (op == 0b01111) {
             alu_src_b.write(true);
-            alu_op.write(0b0000);
+            alu_op.write(0b0001);
             mem_read.write(false);
             mem_write.write(true);
             addr_bd_or_dir.write(false);
@@ -176,9 +176,9 @@ int sc_main(int argc, char* argv[]) {
     };
 
     // Testes das categorias de instrucoes
-    test_opcode(0b00000, "ADD (Tipo 1 - Aritmetica/Logica com Reg)");
-    test_opcode(0b00001, "SUB (Tipo 1 (testando ALUOP) - Aritmetica/Logica com Reg)");
-    test_opcode(0b00111, "ADDI (Tipo 2 - Aritmetica/Logica com Imediato)");
+    test_opcode(0b00001, "ADD (Tipo 1 - Aritmetica/Logica com Reg)");
+    test_opcode(0b00010, "SUB (Tipo 1 (testando ALUOP) - Aritmetica/Logica com Reg)");
+    test_opcode(0b01000, "ADDI (Tipo 2 - Aritmetica/Logica com Imediato)");
     test_opcode(0b01110, "LW (Tipo 3 - Load Direto)");
     test_opcode(0b01111, "SW (Tipo 3 - Store Direto)");
     test_opcode(0b10000, "LW_IND (Tipo 4 - Load Indireto)");

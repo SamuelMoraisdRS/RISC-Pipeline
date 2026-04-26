@@ -8,6 +8,7 @@ SC_MODULE(IdExRegister) {
     // Portas de Entrada
     sc_in<bool> clk;
     sc_in<bool> reset;
+    sc_in<bool> uncond_jump_flush;
 
     sc_in<sc_uint<32>> next_instruction_address_in;
     sc_in<sc_uint<32>> data_read_1_in;
@@ -55,7 +56,7 @@ SC_MODULE(IdExRegister) {
 private:
 
     void store_information() {
-      if (reset.read()) {
+      if (reset.read() || uncond_jump_flush.read()) {
         next_instruction_address_out.write(0);
         data_read_1_out.write(0);
         data_read_2_out.write(0);
