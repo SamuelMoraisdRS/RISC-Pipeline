@@ -8,19 +8,21 @@ SC_MODULE(IfIdRegister) {
     // Portas de Entrada
     sc_in<bool> clk;
     sc_in<bool> reset;
-    sc_in<bool> if_id_write; // Importante para lidar com Hazards futuramente
+    sc_in<bool> cond_jump_flush;
+    sc_in<bool> uncond_jump_flush;
+    sc_in<bool> if_id_write; // Verifica se precisa realizar o stall (vem do Hazard Detection Unit)
 
-    sc_in<sc_uint<32>> next_instruction_address_in;
-    sc_in<sc_uint<32>> instruction_in;
+    sc_in<sc_uint<32>> next_instruction_address_in; // Entrada do PC
+    sc_in<sc_uint<32>> instruction_in; // Entrada da Instruction Memory
 
-    // Portas de Saída
-    sc_out<sc_uint<32>> next_instruction_address_out;
-    sc_out<sc_uint<32>> instruction_out;
+    // Portas de Saída para o proximo estagio (ID)
+    sc_out<sc_uint<32>> next_instruction_address_out; 
+    sc_out<sc_uint<32>> instruction_out; 
 
 private:
 
     void store_information() {
-      if (reset.read()) {
+      if (reset.read() || cond_jump_flush.read() || uncond_jump_flush.read()) {
         next_instruction_address_out.write(0);
         instruction_out.write(0);
       } else if(if_id_write.read()) {
