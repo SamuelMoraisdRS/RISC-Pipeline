@@ -12,12 +12,12 @@ SC_MODULE(IfIdRegister) {
     sc_in<bool> uncond_jump_flush;
     sc_in<bool> if_id_write; // Verifica se precisa realizar o stall (vem do Hazard Detection Unit)
 
-    sc_in<sc_uint<32>> next_instruction_address_in;
-    sc_in<sc_uint<32>> instruction_in;
+    sc_in<sc_uint<32>> next_instruction_address_in; // Entrada do PC
+    sc_in<sc_uint<32>> instruction_in; // Entrada da Instruction Memory
 
-    // Portas de Saída
-    sc_out<sc_uint<32>> next_instruction_address_out;
-    sc_out<sc_uint<32>> instruction_out;
+    // Portas de Saída para o proximo estagio (ID)
+    sc_out<sc_uint<32>> next_instruction_address_out; 
+    sc_out<sc_uint<32>> instruction_out; 
 
 private:
 

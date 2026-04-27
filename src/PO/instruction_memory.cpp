@@ -5,12 +5,12 @@
 #include <vector>
 
 SC_MODULE(InstructionMemory) {
-    sc_in<sc_int<32>> address;
+    sc_in<sc_uint<32>> address;
 
-    sc_out<sc_int<32>> instruction;
+    sc_out<sc_uint<32>> instruction;
 
     // 2^27 = 134217728 (Memória teórica. Talvez precise mudar)
-    sc_int<32> memory[1024];
+    sc_uint<32> memory[1024];
 
     void fetch_instruction() {
       int idx = address.read().to_int();

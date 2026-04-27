@@ -9,13 +9,13 @@ SC_MODULE(DataMemory) {
   sc_in<bool> mem_read;
   sc_in<bool> mem_write;
 
-  sc_in<sc_int<32>> address;
-  sc_in<sc_int<32>> write_data;
+  sc_in<sc_uint<32>> address;
+  sc_in<sc_uint<32>> write_data;
 
-  sc_out<sc_int<32>> read_data;
+  sc_out<sc_uint<32>> read_data;
 
   // 2^23 = 8388608 (Memória teórica. Talvez precise mudar)
-  sc_int<32> memory[1024];
+  sc_uint<32> memory[1024];
 
   void load_memory() {
     if(mem_read.read()) {

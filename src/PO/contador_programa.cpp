@@ -12,13 +12,13 @@ sc_in<bool> clk; /// Clock
 sc_in<bool> reset; /// Resetar
 sc_in<bool> pc_write; /// Se 1, carrega o endereço do jump. Se 0, faz PC + 1.
 // NOTE : Vai receber esse do registrador EX/MEM da pipeline
-sc_in<sc_int<32>> pc_jump; /// Endereço alvo do salto
+sc_in<sc_uint<32>> pc_jump; /// Endereço alvo do salto
 
 // Saidas
-sc_out<sc_int<32>> pc_out; /// Saida do contador
+sc_out<sc_uint<32>> pc_out; /// Saida do contador
 
 // Guarda o estado do pc
-sc_int<32> pc_internal;
+sc_uint<32> pc_internal;
 
 void process_contador() {
     if (reset.read()) {
@@ -47,8 +47,8 @@ int sc_main(int argc, char* argv[]) {
     sc_clock clk("clk", 5, SC_NS);
     sc_signal<bool> reset;
     sc_signal<bool> pc_write;
-    sc_signal<sc_int<32>> pc_jump;
-    sc_signal<sc_int<32>> pc_out;
+    sc_signal<sc_uint<32>> pc_jump;
+    sc_signal<sc_uint<32>> pc_out;
 
     ContadorPrograma pc("pc");
     pc.clk(clk);

@@ -8,10 +8,10 @@
 SC_MODULE(EXTENSOR_27) {
         
     // Entrada
-    sc_in<sc_int<27>> imm; /// Immediato
+    sc_in<sc_uint<27>> imm; /// Immediato
 
     // Saidas
-    sc_out<sc_int<32>> result; /// Resultado da operação aritmetica
+    sc_out<sc_uint<32>> result; /// Resultado da operação aritmetica
 
     void process_extensor_sinal() {
         sc_int<32> res;
