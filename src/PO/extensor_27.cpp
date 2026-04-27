@@ -28,8 +28,8 @@ SC_MODULE(EXTENSOR_27) {
 #ifndef MODO_TESTE
 // Simulacao
 int sc_main(int argc, char* argv[]) {
-    sc_signal<sc_int<27>> imm;
-    sc_signal<sc_int<32>> result;
+    sc_signal<sc_uint<27>> imm;
+    sc_signal<sc_uint<32>> result;
 
     EXTENSOR_27 ext("ext");
     ext.imm(imm);

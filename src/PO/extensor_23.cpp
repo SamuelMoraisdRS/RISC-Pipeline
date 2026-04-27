@@ -8,13 +8,13 @@
 SC_MODULE(EXTENSOR_23) {
         
     // Entrada
-    sc_in<sc_int<23>> imm; /// Immediato
+    sc_in<sc_uint<23>> imm; /// Immediato
 
     // Saidas
-    sc_out<sc_int<32>> result; /// Resultado da operação aritmetica
+    sc_out<sc_uint<32>> result; /// Resultado da operação aritmetica
 
     void process_extensor_sinal() {
-        sc_int<32> res;
+        sc_uint<32> res;
         // Systemc faz a extensao implicitamente
         result.write(imm.read());
     };
@@ -28,8 +28,8 @@ SC_MODULE(EXTENSOR_23) {
 #ifndef MODO_TESTE
 // Simulacao
 int sc_main(int argc, char* argv[]) {
-    sc_signal<sc_int<23>> imm;
-    sc_signal<sc_int<32>> result;
+    sc_signal<sc_uint<23>> imm;
+    sc_signal<sc_uint<32>> result;
 
     EXTENSOR_23 ext("ext");
     ext.imm(imm);
