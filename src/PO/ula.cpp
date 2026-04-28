@@ -20,14 +20,14 @@ void process_ula() {
     sc_int<32> res;
     bool j_cond = false;
     switch (op.read()) {
-        case 0b0000: // ADD
+        case 0b0000: // AND
+            res = operand_a.read() & operand_b.read();
+            break;
+        case 0b0001: // ADD
             res = operand_a.read() + operand_b.read();
             break;
-        case 0b0001: // SUB
+        case 0b0010: // SUB
             res = operand_a.read() - operand_b.read();
-            break;
-        case 0b0010: // AND
-            res = operand_a.read() & operand_b.read();
             break;
         case 0b0011: // OR
             res = operand_a.read() | operand_b.read();
@@ -86,10 +86,10 @@ int sc_main(int argc, char* argv[]) {
 
     operand_a.write(15);
     operand_b.write(10);
-    op.write(0b0000); // ADD
+    op.write(0b0001); // ADD
     sc_start(10, SC_NS);
 
-    op.write(0b0001); // SUB
+    op.write(0b0010); // SUB
     sc_start(10, SC_NS);
 
     op.write(0b1000); // JN

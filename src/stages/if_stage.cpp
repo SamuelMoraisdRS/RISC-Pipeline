@@ -109,6 +109,10 @@ SC_MODULE(IfStage) {
     }
 
     ~IfStage() {
+        delete pc;
+        delete inst_mem;
+        delete mux_pc;
+        delete ext_27;
     }
 };
 
