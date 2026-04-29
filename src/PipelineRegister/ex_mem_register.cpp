@@ -18,7 +18,7 @@ SC_MODULE(ExMemRegister) {
     sc_in<bool> mem_read_in;
     sc_in<bool> mem_write_in;
     // WB (Entrada)
-    sc_in<bool> mem_to_reg_in;
+    sc_in<sc_uint<2>> mem_to_reg_in;
     sc_in<bool> reg_write_in;
 
     // Portas de Saída
@@ -31,7 +31,7 @@ SC_MODULE(ExMemRegister) {
     sc_out<bool> mem_read_out;
     sc_out<bool> mem_write_out;
     // WB (Saída)
-    sc_out<bool> mem_to_reg_out;
+    sc_out<sc_uint<2>> mem_to_reg_out;
     sc_out<bool> reg_write_out;
 
 private:
@@ -47,7 +47,7 @@ private:
         mem_read_out.write(false);
         mem_write_out.write(false);
         // WB 
-        mem_to_reg_out.write(false);
+        mem_to_reg_out.write(0);
         reg_write_out.write(false);
       } else {
         address_out.write(address_in.read());
