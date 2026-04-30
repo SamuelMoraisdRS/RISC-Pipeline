@@ -1,3 +1,6 @@
+#ifndef UC_H
+#define UC_H
+
 #include <systemc.h>
 
 // OpCodes
@@ -13,8 +16,8 @@ SC_MODULE(ControlUnit) {
     sc_in<sc_uint<5>> opcode; // Opcode da instrucao -> Vai definir a transicao de estados que sera feita
 
     // Sinais de Controle
-    sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, mem_to_reg, store_bd_or_dir, reg_write, mem_read, mem_write, is_uncond_jump;
-    sc_out<sc_uint<2>> reg_dest, pc_source; // Sinais enviados aos muxes
+    sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, store_bd_or_dir, reg_write, mem_read, mem_write, is_uncond_jump;
+    sc_out<sc_uint<2>> reg_dest, pc_source, mem_to_reg; // Sinais enviados aos muxes
     sc_out<sc_uint<4>> alu_op;
 
     void combined_logic() {
@@ -26,7 +29,7 @@ SC_MODULE(ControlUnit) {
         imed_size.write(false);
         alu_src_b.write(false);
         addr_bd_or_dir.write(false);
-        mem_to_reg.write(false);
+        mem_to_reg.write(0);
         store_bd_or_dir.write(false);
         alu_op.write(0b0001);
         reg_write.write(false);
@@ -38,14 +41,14 @@ SC_MODULE(ControlUnit) {
             alu_op.write(opcode.read());
             reg_dest.write(0b00);
             reg_write.write(true);
-            mem_to_reg.write(false);
+            mem_to_reg.write(0);
         } 
         else if (op <= 0b01101) {
             alu_src_b.write(true);
             alu_op.write(opcode.read() - 7);
             reg_dest.write(0b01);
             reg_write.write(true);
-            mem_to_reg.write(false);
+            mem_to_reg.write(0);
         }
         else if (op == 0b01110) {
             alu_src_b.write(true);
@@ -55,7 +58,7 @@ SC_MODULE(ControlUnit) {
             addr_bd_or_dir.write(false);
             reg_dest.write(0b01);
             reg_write.write(true);
-            mem_to_reg.write(true);
+            mem_to_reg.write(1);
         }
         else if (op == 0b01111) {
             alu_src_b.write(true);
@@ -74,7 +77,7 @@ SC_MODULE(ControlUnit) {
             addr_bd_or_dir.write(true);
             reg_dest.write(0b10);
             reg_write.write(true);
-            mem_to_reg.write(true);
+            mem_to_reg.write(1);
         }
         else if (op == 0b10001) {
             alu_src_b.write(true);
@@ -115,8 +118,8 @@ int sc_main(int argc, char* argv[]) {
     sc_signal<sc_uint<5>> opcode;
 
     // Saida
-    sc_signal<bool> s_imed_size, s_alu_src_b, s_addr_bd_or_dir, s_mem_to_reg, s_store_bd_or_dir, s_reg_write, s_mem_read, s_mem_write;
-    sc_signal<sc_uint<2>> s_reg_dest, s_pc_source;
+    sc_signal<bool> s_imed_size, s_alu_src_b, s_addr_bd_or_dir, s_store_bd_or_dir, s_reg_write, s_mem_read, s_mem_write;
+    sc_signal<sc_uint<2>> s_reg_dest, s_pc_source, s_mem_to_reg;
     sc_signal<sc_uint<4>> s_alu_op;
 
     // Instanciacao do circuito
@@ -194,3 +197,5 @@ int sc_main(int argc, char* argv[]) {
     return 0;
 }
 #endif
+
+#endif // UC_H
