@@ -15,6 +15,9 @@ SC_MODULE(IdExRegister) {
     sc_in<sc_uint<32>> data_read_2_in;
     sc_in<sc_uint<32>> imm_19_in;
     sc_in<sc_uint<32>> imm_23_in;
+    sc_in<sc_uint<4>> rs_in;
+    sc_in<sc_uint<4>> rt_in;
+    sc_in<sc_uint<4>> rd_in;
 
     // EX (Entrada)
     sc_in<sc_uint<4>> alu_op_in;
@@ -37,6 +40,9 @@ SC_MODULE(IdExRegister) {
     sc_out<sc_uint<32>> data_read_2_out;
     sc_out<sc_uint<32>> imm_19_out;
     sc_out<sc_uint<32>> imm_23_out;
+    sc_out<sc_uint<4>> rs_out;
+    sc_out<sc_uint<4>> rt_out;
+    sc_out<sc_uint<4>> rd_out;
 
     // EX (Saída)
     sc_out<sc_uint<4>> alu_op_out;
@@ -62,6 +68,9 @@ private:
         data_read_2_out.write(0);
         imm_19_out.write(0);
         imm_23_out.write(0);
+        rs_out.write(0);
+        rt_out.write(0);
+        rd_out.write(0);
         
         // EX
         alu_op_out.write(0);
@@ -83,6 +92,9 @@ private:
         data_read_2_out.write(data_read_2_in.read());
         imm_19_out.write(imm_19_in.read());
         imm_23_out.write(imm_23_in.read());
+        rs_out.write(rs_in.read());
+        rt_out.write(rt_in.read());
+        rd_out.write(rd_in.read());
 
         // EX
         alu_op_out.write(alu_op_in.read());
