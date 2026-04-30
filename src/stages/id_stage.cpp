@@ -38,7 +38,7 @@ SC_MODULE(IdStage) {
     sc_in<bool> reg_write_in; 
 
     // Entradas que vem do estagio WB
-    sc_in<sc_uint<4>> write_data_in; 
+    sc_in<sc_uint<32>> write_data_in; 
 
     // Sinais da unidade de controle
     sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, store_bd_or_dir, reg_write, mem_read, mem_write, is_uncond_jump;
@@ -94,7 +94,7 @@ SC_MODULE(IdStage) {
         reg_file = new RegisterFile("RegFile");
         ext_19 = new EXTENSOR_19("Ext19");
         ext_23 = new EXTENSOR_23("Ext23");
-        ext_27 = new Extensor27("Ext27");
+        ext_27 = new EXTENSOR_27("Ext27");
 
         SC_METHOD(segmentar_instrucoes);
         sensitive << instruction_in << pc_in;

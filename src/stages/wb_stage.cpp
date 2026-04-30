@@ -43,10 +43,10 @@ SC_MODULE(WbStage) {
     sc_signal<sc_uint<32>> dummy_in2;
 
     // Mux
-    MUX_3* mux;
+    MUX_3<>* mux;
 
     SC_CTOR(WbStage) {
-        mux = new MUX_3("Mux_WB");
+        mux = new MUX_3<>("Mux_WB");
 
         // Mapeamento das portas do MUX de Write Back
         mux->in0(ula_result_in); // Entrada 0: Resultado da ULA

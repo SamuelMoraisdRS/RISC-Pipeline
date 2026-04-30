@@ -11,7 +11,6 @@
 #include "PO/data_memory.cpp"
 #include "PO/extensor_19.cpp"
 #include "PO/extensor_23.cpp"
-#include "PO/extensor_27.cpp"
 #include "PO/mux_3.cpp"
 
 // Includes da Unidade de Controle (PC)
@@ -35,35 +34,37 @@ SC_MODULE(IfStage) {
 
     sc_in<sc_uint<2>> pc_source; // Define se vai sobrescrever o PC
 
-    sc_in<sc_uint<27>> ext_in;
-    sc_in<sc_uint<32>> ex_pc_in;
+    sc_in<sc_uint<32>> branch_pc_in; // Endereço de branch resolvido no EX
+    sc_in<sc_uint<32>> id_jump_pc_in; // Endereço de jump resolvido no ID
+    sc_in<bool> id_jump_taken;      // Flag de jump vindo do ID
     sc_in<bool> pc_write_in;       // Sinal de load do PC
 
     // Sinais para interligar os componentes
+    // Sinais para interligar os componentes
     sc_signal<sc_uint<32>> next_pc_signal; // Saida do PC para o mux
     sc_signal<sc_uint<32>> pc_out_signal;  // Saida do PC para a memória de instruções
-    sc_signal<sc_uint<32>> ext_27_out;     // Saída do extensor 27 para o Mux
     sc_signal<sc_uint<32>> pc_out_mux;     // Saída do Mux para o PC
     
     // Saida do PC e da mem. instr.
     sc_out<sc_uint<32>> pc_out;
     sc_out<sc_uint<32>> mem_instr_out;
 
-    // Declaração dos ponteiros para os componentes
     ContadorPrograma* pc;
     InstructionMemory* inst_mem;
-    
-    // Extensores
-    Extensor27* ext_27;
-
-    // Mux
-    MUX_3* mux_pc;
 
     void processar_pc() {
-        // Calcula o PC+1 para repassar aos demais estágios (IF/ID)
-        next_pc_signal.write(pc_out_signal.read() + 1);
-        // Repassa o valor atual do PC para a porta de saída do módulo IF
+        sc_uint<32> next_pc = pc_out_signal.read() + 1;
+        next_pc_signal.write(next_pc);
         pc_out.write(pc_out_signal.read());
+
+        // Lógica de seleção do próximo PC. Trocar por mux
+        if (id_jump_taken.read()) {
+            pc_out_mux.write(id_jump_pc_in.read());
+        } else if (pc_source.read() == 0b01) {
+            pc_out_mux.write(branch_pc_in.read());
+        } else {
+            pc_out_mux.write(next_pc);
+        }
     }
 
     // Metodo auxiliar para carregar o programa 
@@ -78,23 +79,10 @@ SC_MODULE(IfStage) {
         // Instanciação dos Componentes
         pc = new ContadorPrograma("PC");
         inst_mem = new InstructionMemory("InstMem");
-        mux_pc = new MUX_3("MuxPC");
-        ext_27 = new Extensor27("Ext27");
 
         SC_METHOD(processar_pc);
-        sensitive << pc_out_signal;
+        sensitive << pc_out_signal << id_jump_taken << id_jump_pc_in << pc_source << branch_pc_in;
 
-        // Mapeamento do Extensor27
-        ext_27->imm(ext_in);
-        ext_27->result(ext_27_out);
-        
-        // Mapeamento do MUX para o PC
-        mux_pc->in0(next_pc_signal); // Entrada 0: PC sequencial
-        mux_pc->in1(ext_27_out);     // Entrada 1: PC estendido de um Branch
-        mux_pc->in2(ex_pc_in);       // Entrada 2: PC de um Jump
-        mux_pc->sel(pc_source);      // Sinal de controle
-        mux_pc->out(pc_out_mux);     // Saída do MUX
-        
         // Mapeamento do PC:
         pc->clk(clk);
         pc->reset(reset);
@@ -111,8 +99,6 @@ SC_MODULE(IfStage) {
     ~IfStage() {
         delete pc;
         delete inst_mem;
-        delete mux_pc;
-        delete ext_27;
     }
 };
 
