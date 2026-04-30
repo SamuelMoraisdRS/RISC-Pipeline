@@ -23,6 +23,9 @@ private:
 
     // 16 registradores de 32 bits
     sc_uint<32> regs[16];
+    
+    // Evento para notificar alterações no banco de registradores
+    sc_event regs_changed;
 
     // Leitura Assíncrona
     void read_registers() {
@@ -44,7 +47,7 @@ private:
         regs[0] = 0;
 
         // Atualiza saídas após escrita
-        read_registers();
+        regs_changed.notify();
     }
 
 public:
@@ -60,7 +63,7 @@ public:
 
         // Processo de leitura
         SC_METHOD(read_registers);
-        sensitive << read_reg1 << read_reg2;
+        sensitive << read_reg1 << read_reg2 << regs_changed;
 
         // Processo de escrita
         SC_METHOD(write_register);

@@ -10,12 +10,12 @@ SC_MODULE(DataMemory) {
   sc_in<bool> mem_write;
 
   sc_in<sc_uint<32>> address;
-  sc_in<sc_uint<32>> write_data;
+  sc_in<sc_int<32>> write_data;
 
-  sc_out<sc_uint<32>> read_data;
+  sc_out<sc_int<32>> read_data;
 
   // 2^23 = 8388608 (Memória teórica. Talvez precise mudar)
-  sc_uint<32> memory[1024];
+  sc_int<32> memory[1024];
 
   void load_memory() {
     if(mem_read.read()) {
@@ -57,8 +57,9 @@ SC_MODULE(DataMemory) {
 int sc_main(int argc, char* argv[]) {
     sc_clock clk("clk", 10, SC_NS);
     sc_signal<bool> s_mem_read, s_mem_write;
-    sc_signal<sc_uint<32>> s_address, s_write_data;
-    sc_signal<sc_uint<32>> s_read_data;
+    sc_signal<sc_uint<32>> s_address;
+    sc_signal<sc_int<32>> s_write_data;
+    sc_signal<sc_int<32>> s_read_data;
 
     DataMemory dmem("DataMemory");
     dmem.clk(clk);
