@@ -21,17 +21,17 @@ SC_MODULE(ForwardUnit) {
 private:
 
     void detect_hazard() {
-        if (ex_mem_reg_write.read() && ex_mem_reg_dest.read() == reg_src1.read()) {
+        if (ex_mem_reg_write.read() && ex_mem_reg_dest.read() != 0 && ex_mem_reg_dest.read() == reg_src1.read()) {
             fwd_a.write(0b01); // Use o dado que vem de EX/MEM
-        } else if (mem_wb_reg_write.read() && mem_wb_reg_dest.read() == reg_src1.read()) {
+        } else if (mem_wb_reg_write.read() && mem_wb_reg_dest.read() != 0 && mem_wb_reg_dest.read() == reg_src1.read()) {
             fwd_a.write(0b10); // Use o dado que vem de MEM/WB
         } else {
             fwd_a.write(0); // Use o dado lido originalmente do banco de registradores
         }
 
-        if (ex_mem_reg_write.read() && ex_mem_reg_dest.read() == reg_src2.read()) {
+        if (ex_mem_reg_write.read() && ex_mem_reg_dest.read() != 0 && ex_mem_reg_dest.read() == reg_src2.read()) {
             fwd_b.write(0b01); // Use o dado que vem de EX/MEM
-        } else if (mem_wb_reg_write.read() && mem_wb_reg_dest.read() == reg_src2.read()) {
+        } else if (mem_wb_reg_write.read() && mem_wb_reg_dest.read() != 0 && mem_wb_reg_dest.read() == reg_src2.read()) {
             fwd_b.write(0b10); // Use o dado que vem de MEM/WB
         } else {
             fwd_b.write(0); // Use o dado lido originalmente do banco de registradores
