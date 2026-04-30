@@ -1,7 +1,7 @@
 // Implementação do Extensor de Sinal
 
-#ifndef EXTENSOR_H
-#define EXTENSOR_H
+#ifndef EXTENSOR_27_H
+#define EXTENSOR_27_H
 
 #include <systemc.h>
 
