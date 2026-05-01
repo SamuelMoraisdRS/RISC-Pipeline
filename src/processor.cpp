@@ -48,10 +48,10 @@ SC_MODULE(Processor) {
     sc_signal<sc_uint<4>> id_rd;
 
     // Sinais ID Stage (Control)
-    sc_signal<bool> id_imed_size;
-    sc_signal<bool> id_alu_src_b;
-    sc_signal<bool> id_addr_bd_or_dir;
-    sc_signal<bool> id_store_bd_or_dir;
+    sc_signal<sc_uint<2>> id_imed_size;
+    sc_signal<sc_uint<2>> id_alu_src_b;
+    sc_signal<sc_uint<2>> id_addr_bd_or_dir;
+    sc_signal<sc_uint<2>> id_store_bd_or_dir;
     sc_signal<bool> id_reg_write;
     sc_signal<bool> id_mem_read;
     sc_signal<bool> id_mem_write;
@@ -62,10 +62,10 @@ SC_MODULE(Processor) {
     sc_signal<sc_uint<4>> id_alu_op;
 
     // Sinais Muxed Control (Após Hazard Detection)
-    sc_signal<bool> muxed_imed_size;
-    sc_signal<bool> muxed_alu_src_b;
-    sc_signal<bool> muxed_addr_bd_or_dir;
-    sc_signal<bool> muxed_store_bd_or_dir;
+    sc_signal<sc_uint<2>> muxed_imed_size;
+    sc_signal<sc_uint<2>> muxed_alu_src_b;
+    sc_signal<sc_uint<2>> muxed_addr_bd_or_dir;
+    sc_signal<sc_uint<2>> muxed_store_bd_or_dir;
     sc_signal<bool> muxed_reg_write;
     sc_signal<bool> muxed_mem_read;
     sc_signal<bool> muxed_mem_write;
@@ -87,10 +87,10 @@ SC_MODULE(Processor) {
     sc_signal<sc_uint<4>> id_ex_alu_op;
     sc_signal<sc_uint<2>> id_ex_reg_dest;
     sc_signal<sc_uint<2>> id_ex_pc_source;
-    sc_signal<bool> id_ex_imed_size;
-    sc_signal<bool> id_ex_alu_src_b;
-    sc_signal<bool> id_ex_addr_bd_or_dir;
-    sc_signal<bool> id_ex_store_bd_or_dir;
+    sc_signal<sc_uint<2>> id_ex_imed_size;
+    sc_signal<sc_uint<2>> id_ex_alu_src_b;
+    sc_signal<sc_uint<2>> id_ex_addr_bd_or_dir;
+    sc_signal<sc_uint<2>> id_ex_store_bd_or_dir;
     sc_signal<bool> id_ex_mem_read;
     sc_signal<bool> id_ex_mem_write;
     sc_signal<sc_uint<2>> id_ex_mem_to_reg;
@@ -177,20 +177,14 @@ SC_MODULE(Processor) {
         const_zero_2b.write(0);
         hdu_rs.write(if_id_instr.read().range(26,23));
         hdu_rt.write(if_id_instr.read().range(22,19));
-        
-        // Conversão de bool para sc_uint<2> para o ExStage (já que os MUXes lá usam 2 bits de seletor)
-        ex_uint_imed_size.write(id_ex_imed_size.read() ? 1 : 0);
-        ex_uint_alu_src_b.write(id_ex_alu_src_b.read() ? 1 : 0);
-        ex_uint_addr_bd_or_dir.write(id_ex_addr_bd_or_dir.read() ? 1 : 0);
-        ex_uint_store_bd_or_dir.write(id_ex_store_bd_or_dir.read() ? 1 : 0);
     }
 
     void hazard_mux_logic() {
         if (hazard_mux.read() == 0) { // Bolha (Zera controles do ID/EX)
-            muxed_imed_size.write(false);
-            muxed_alu_src_b.write(false);
-            muxed_addr_bd_or_dir.write(false);
-            muxed_store_bd_or_dir.write(false);
+            muxed_imed_size.write(0);
+            muxed_alu_src_b.write(0);
+            muxed_addr_bd_or_dir.write(0);
+            muxed_store_bd_or_dir.write(0);
             muxed_reg_write.write(false);
             muxed_mem_read.write(false);
             muxed_mem_write.write(false);
@@ -359,11 +353,11 @@ SC_MODULE(Processor) {
         ex_stage->imm_23_in(id_ex_imm_23);
         ex_stage->pc_plus_4_in(id_ex_pc);
         
-        ex_stage->imed_size_in(ex_uint_imed_size); 
-        ex_stage->alu_src_b_in(ex_uint_alu_src_b);
+        ex_stage->imed_size_in(id_ex_imed_size); 
+        ex_stage->alu_src_b_in(id_ex_alu_src_b);
         ex_stage->alu_op_in(id_ex_alu_op);
-        ex_stage->store_bd_or_dir_in(ex_uint_store_bd_or_dir);
-        ex_stage->addr_bd_or_dir_in(ex_uint_addr_bd_or_dir);
+        ex_stage->store_bd_or_dir_in(id_ex_store_bd_or_dir);
+        ex_stage->addr_bd_or_dir_in(id_ex_addr_bd_or_dir);
         ex_stage->reg_dest_in(id_ex_reg_dest);
         ex_stage->pc_source_in(id_ex_pc_source);
         ex_stage->rt_in(id_ex_rt);

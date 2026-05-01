@@ -41,7 +41,8 @@ SC_MODULE(IdStage) {
     sc_in<sc_uint<32>> write_data_in; 
 
     // Sinais da unidade de controle
-    sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, store_bd_or_dir, reg_write, mem_read, mem_write, is_uncond_jump;
+    sc_out<sc_uint<2>> imed_size, alu_src_b, addr_bd_or_dir, store_bd_or_dir;
+    sc_out<bool> reg_write, mem_read, mem_write, is_uncond_jump;
     sc_out<sc_uint<2>> reg_dest, pc_source, mem_to_reg; 
     sc_out<sc_uint<4>> alu_op;
 

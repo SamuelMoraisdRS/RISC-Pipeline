@@ -16,7 +16,8 @@ SC_MODULE(ControlUnit) {
     sc_in<sc_uint<5>> opcode; // Opcode da instrucao -> Vai definir a transicao de estados que sera feita
 
     // Sinais de Controle
-    sc_out<bool> imed_size, alu_src_b, addr_bd_or_dir, store_bd_or_dir, reg_write, mem_read, mem_write, is_uncond_jump;
+    sc_out<sc_uint<2>> imed_size, alu_src_b, addr_bd_or_dir, store_bd_or_dir;
+    sc_out<bool> reg_write, mem_read, mem_write, is_uncond_jump;
     sc_out<sc_uint<2>> reg_dest, pc_source, mem_to_reg; // Sinais enviados aos muxes
     sc_out<sc_uint<4>> alu_op;
 
@@ -26,11 +27,11 @@ SC_MODULE(ControlUnit) {
         reg_dest.write(0b00);
         pc_source.write(0b00);
         is_uncond_jump.write(false);
-        imed_size.write(false);
-        alu_src_b.write(false);
-        addr_bd_or_dir.write(false);
+        imed_size.write(0);
+        alu_src_b.write(0);
+        addr_bd_or_dir.write(0);
         mem_to_reg.write(0);
-        store_bd_or_dir.write(false);
+        store_bd_or_dir.write(0);
         alu_op.write(0b0001);
         reg_write.write(false);
         mem_read.write(false);
@@ -51,41 +52,41 @@ SC_MODULE(ControlUnit) {
             mem_to_reg.write(0);
         }
         else if (op == 0b01110) {
-            alu_src_b.write(true);
+            alu_src_b.write(1);
             alu_op.write(0b0001);
             mem_read.write(true);
             mem_write.write(false);
-            addr_bd_or_dir.write(false);
+            addr_bd_or_dir.write(0);
             reg_dest.write(0b01);
             reg_write.write(true);
             mem_to_reg.write(1);
         }
         else if (op == 0b01111) {
-            alu_src_b.write(true);
+            alu_src_b.write(1);
             alu_op.write(0b0001);
             mem_read.write(false);
             mem_write.write(true);
-            addr_bd_or_dir.write(false);
-            store_bd_or_dir.write(false);
+            addr_bd_or_dir.write(0);
+            store_bd_or_dir.write(0);
             reg_write.write(false);
         }
         else if (op == 0b10000) {
-            alu_src_b.write(true);
-            imed_size.write(true);
+            alu_src_b.write(1);
+            imed_size.write(1);
             mem_read.write(true);
             mem_write.write(false);
-            addr_bd_or_dir.write(true);
+            addr_bd_or_dir.write(1);
             reg_dest.write(0b10);
             reg_write.write(true);
             mem_to_reg.write(1);
         }
         else if (op == 0b10001) {
-            alu_src_b.write(true);
-            imed_size.write(true);
+            alu_src_b.write(1);
+            imed_size.write(1);
             mem_read.write(false);
             mem_write.write(true);
-            addr_bd_or_dir.write(true);
-            store_bd_or_dir.write(true);
+            addr_bd_or_dir.write(1);
+            store_bd_or_dir.write(1);
             reg_write.write(false);
         }
         else if (op == 0b10010) {
@@ -93,12 +94,12 @@ SC_MODULE(ControlUnit) {
             is_uncond_jump.write(true);
         }
         else if (op == 0b10011) {
-            imed_size.write(true);
+            imed_size.write(1);
             alu_op.write(0b0111);
             pc_source.write(0b10);
         }
         else if (op == 0b10100) {
-            imed_size.write(true);
+            imed_size.write(1);
             alu_op.write(0b1000);
             pc_source.write(0b10);
         }

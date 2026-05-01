@@ -23,10 +23,10 @@ SC_MODULE(IdExRegister) {
     sc_in<sc_uint<4>> alu_op_in;
     sc_in<sc_uint<2>> reg_dest_in;
     sc_in<sc_uint<2>> pc_source_in;
-    sc_in<bool> imed_size_in;
-    sc_in<bool> alu_src_b_in;
-    sc_in<bool> addr_bd_or_dir_in;
-    sc_in<bool> store_bd_or_dir_in;
+    sc_in<sc_uint<2>> imed_size_in;
+    sc_in<sc_uint<2>> alu_src_b_in;
+    sc_in<sc_uint<2>> addr_bd_or_dir_in;
+    sc_in<sc_uint<2>> store_bd_or_dir_in;
     // M (Entrada)
     sc_in<bool> mem_read_in;
     sc_in<bool> mem_write_in;
@@ -48,10 +48,10 @@ SC_MODULE(IdExRegister) {
     sc_out<sc_uint<4>> alu_op_out;
     sc_out<sc_uint<2>> reg_dest_out;
     sc_out<sc_uint<2>> pc_source_out;
-    sc_out<bool> imed_size_out;
-    sc_out<bool> alu_src_b_out;
-    sc_out<bool> addr_bd_or_dir_out;
-    sc_out<bool> store_bd_or_dir_out;
+    sc_out<sc_uint<2>> imed_size_out;
+    sc_out<sc_uint<2>> alu_src_b_out;
+    sc_out<sc_uint<2>> addr_bd_or_dir_out;
+    sc_out<sc_uint<2>> store_bd_or_dir_out;
     // M (Saída)
     sc_out<bool> mem_read_out;
     sc_out<bool> mem_write_out;
@@ -76,10 +76,10 @@ private:
         alu_op_out.write(0);
         reg_dest_out.write(0);
         pc_source_out.write(0);
-        imed_size_out.write(false);
-        alu_src_b_out.write(false);
-        addr_bd_or_dir_out.write(false);
-        store_bd_or_dir_out.write(false);
+        imed_size_out.write(0);
+        alu_src_b_out.write(0);
+        addr_bd_or_dir_out.write(0);
+        store_bd_or_dir_out.write(0);
         // M 
         mem_read_out.write(false);
         mem_write_out.write(false);
