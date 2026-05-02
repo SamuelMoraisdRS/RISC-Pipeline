@@ -31,6 +31,32 @@ int sc_main(int argc, char* argv[]) {
     sc_trace(wf, processor.wb_out, "WB_Data");
     sc_trace(wf, processor.mem_wb_dest_reg, "DestReg");
     sc_trace(wf, processor.mem_wb_reg_write, "RegWrite");
+    
+    // Sinais da ULA
+    sc_trace(wf, processor.ex_alu_a_debug, "ALU_A");
+    sc_trace(wf, processor.ex_alu_b_debug, "ALU_B");
+    sc_trace(wf, processor.id_ex_alu_op, "ALU_Op");
+    sc_trace(wf, processor.ex_ula_result, "ALU_Result");
+    sc_trace(wf, processor.fwd_a, "FwdA");
+    sc_trace(wf, processor.fwd_b, "FwdB");
+    sc_trace(wf, processor.id_ex_data_1, "ID_EX_D1");
+    sc_trace(wf, processor.id_ex_data_2, "ID_EX_D2");
+    sc_trace(wf, processor.wb_out, "WB_OUT");
+
+    // Sinais MEM Stage
+    sc_trace(wf, processor.ex_mem_reg_write, "MEM_RegWrite");
+    sc_trace(wf, processor.ex_mem_mem_to_reg, "MEM_MemToReg");
+    sc_trace(wf, processor.ex_mem_ula_result, "MEM_ALU_Result");
+    sc_trace(wf, processor.mem_read_data, "MEM_ReadData");
+    sc_trace(wf, processor.ex_mem_dest_reg, "MEM_DestReg");
+
+    // Sinais WB Stage
+    sc_trace(wf, processor.mem_wb_reg_write, "WB_RegWrite");
+    sc_trace(wf, processor.mem_wb_mem_to_reg, "WB_MemToReg");
+    sc_trace(wf, processor.mem_wb_ula_result, "WB_ALU_Result");
+    sc_trace(wf, processor.mem_wb_read_data, "WB_ReadData");
+    sc_trace(wf, processor.mem_wb_dest_reg, "WB_DestReg");
+    sc_trace(wf, processor.wb_out, "WB_Data_Final");
 
     // Rastrear Banco de Registradores
     for (int i = 0; i < 16; i++) {
@@ -40,8 +66,8 @@ int sc_main(int argc, char* argv[]) {
 
     cout << "@" << sc_time_stamp() << " Iniciando Simulação: Soma Simples (1+1)" << endl;
     
-    reset.write(true);
-    sc_start(5, SC_NS);
+    // reset.write(true);
+    sc_start(15, SC_NS);
     reset.write(false);
     sc_start(5, SC_NS); 
 
