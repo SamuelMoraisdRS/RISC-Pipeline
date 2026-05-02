@@ -43,14 +43,11 @@ private:
             id_ex_flush.write(1); // limpa a instrução no ID/EX
         }
 
-        // Lógica Load-Use (Stall se depende de um LW em EX ou MEM)
+        // Lógica Load-Use (Stall de 1 ciclo se depende de um LW em EX)
         bool hazard_ex = id_ex_mem_read.read() && 
                          (reg_src1.read() == id_ex_reg_dest.read() || reg_src2.read() == id_ex_reg_dest.read());
         
-        bool hazard_mem = ex_mem_mem_read.read() && 
-                          (reg_src1.read() == ex_mem_reg_dest.read() || reg_src2.read() == ex_mem_reg_dest.read());
-
-        if (hazard_ex || hazard_mem) {
+        if (hazard_ex) {
             pc_write.write(0);
             if_id_write.write(0);
             hazard_mux.write(0); 
