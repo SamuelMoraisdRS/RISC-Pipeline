@@ -43,12 +43,8 @@ SC_MODULE(ExStage) {
     sc_in<sc_uint<4>> alu_op_in; // Instrução vinda da memória
     sc_in<sc_uint<2>> store_bd_or_dir_in; // Instrução vinda da memória
     sc_in<sc_uint<2>> addr_bd_or_dir_in; // Instrução vinda da memória
-    sc_in<sc_uint<2>> reg_dest_in; // Instrução vinda da memória
-    sc_in<sc_uint<2>> pc_source_in; // Sinal da Unidade de Controle
-
-    // Entradas adicionais necessárias
-    sc_in<sc_uint<4>> rt_in;
-    sc_in<sc_uint<4>> rd_in;
+    sc_in<sc_uint<4>> reg_dest_address_in;
+    sc_in<sc_uint<2>> pc_source_in;
 
     // == Entradas vindo da Forward Unit
     sc_in<sc_uint<2>> fwd_a_in;
@@ -60,8 +56,13 @@ SC_MODULE(ExStage) {
     sc_out<sc_uint<32>> ula_result_out;
     sc_out<sc_uint<32>> store_data_out; 
     sc_out<sc_uint<32>> branch_pc_out; // Endereço de jump cond retornado ao estagio IF
+    sc_out<bool> branch_taken_out;     // Sinal de confirmação de salto condicional (flush)
     sc_out<sc_uint<4>> dest_reg_out;   // Registrador destino de escrita
     sc_out<sc_uint<2>> pc_source_out;  // Repasse do sinal de PC Source para o IF
+    
+    // Portas de Debug
+    sc_out<sc_uint<32>> alu_a_debug;
+    sc_out<sc_uint<32>> alu_b_debug;
 
 
     // Sinais para interligar os componentes
@@ -108,18 +109,26 @@ SC_MODULE(ExStage) {
         zero_4_sig.write(0);
         mux_if_sel_sig.write(is_jump_out.read() ? 1 : 0); // Seleciona Immediate se jumpcond eh 1
 
-        // Repassa o sinal de controle de origem do PC para o  if
+        // Repassa o endereço de destino e PC source
+        dest_reg_out.write(reg_dest_address_in.read());
         pc_source_out.write(pc_source_in.read());
+        branch_taken_out.write(is_jump_out.read());
         
         // Envia dado para mem (store)
         store_data_out.write(mux_store_bd_or_dir_out.read());
     }
 
+    void update_debug_outputs() {
+        alu_a_debug.write(mux_alu_a_out.read());
+        alu_b_debug.write(mux_alu_b_out.read());
+    }
+
     SC_CTOR(ExStage) {
+        SC_METHOD(update_debug_outputs);
+        sensitive << mux_alu_a_out << mux_alu_b_out;
         // Instanciando dos Componentes
         ula = new ULA("ULA");
         mux_alu_src_b = new MUX_3<>("MuxALUSrcB");
-        mux_write_dest_reg = new MUX_3<4>("MuxWriteDestReg");
         mux_imed_size = new MUX_3<>("MuxImedSize");
         mux_addr_bd_or_dir = new MUX_3<>("MuxAddrBDorDir");
         mux_store_bd_or_dir = new MUX_3<>("MuxStoreBDorDir");
@@ -128,7 +137,7 @@ SC_MODULE(ExStage) {
         mux_alu_b = new MUX_3<>("MuxAluB");
 
         SC_METHOD(process_dummy_signals);
-        sensitive << is_jump_out << pc_source_in << mux_store_bd_or_dir_out;
+        sensitive << is_jump_out << pc_source_in << mux_store_bd_or_dir_out << reg_dest_address_in;
 
         mux_imed_size->in0(imm_19_in);
         mux_imed_size->in1(imm_23_in);
@@ -172,13 +181,6 @@ SC_MODULE(ExStage) {
         mux_if->in2(zero_32_sig); // Dont care
         mux_if->sel(mux_if_sel_sig);
         mux_if->out(branch_pc_out); // Vai para IF Stage
-
-        // MUX 1 (RegDest)
-        mux_write_dest_reg->in0(rt_in);
-        mux_write_dest_reg->in1(rd_in);
-        mux_write_dest_reg->in2(zero_4_sig); // Dont care
-        mux_write_dest_reg->sel(reg_dest_in);
-        mux_write_dest_reg->out(dest_reg_out);
 
         // MUX 8 (StoreBDOrDir) -> Encaminha data_read_1 ou data_read_2 (Idealmente usa Forwarding B!)
         mux_store_bd_or_dir->in0(mux_alu_b_out); // Mudado para usar Forward B (MUX 10)

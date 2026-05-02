@@ -52,7 +52,6 @@ SC_MODULE(IdStage) {
     sc_signal<sc_uint<23>> ext_23_in;
     sc_signal<sc_uint<4>> read_reg_1; 
     sc_signal<sc_uint<4>> read_reg_2; 
-    sc_signal<sc_uint<5>> opcode_signal; 
 
     // Saidas para o registrador ID/EX
     sc_out<sc_uint<32>> data_read_1;
@@ -64,6 +63,10 @@ SC_MODULE(IdStage) {
     sc_out<sc_uint<4>> rs_out;
     sc_out<sc_uint<4>> rt_out;
     sc_out<sc_uint<4>> rd_out;
+    sc_out<sc_uint<4>> reg_dest_address_out;
+
+    MUX_3<4>* mux_dest;
+    sc_signal<sc_uint<4>> id_reg_dest_sel; // Sinal interno para o mux
 
     ControlUnit* uc;
     RegisterFile* reg_file;
@@ -72,6 +75,7 @@ SC_MODULE(IdStage) {
     EXTENSOR_27* ext_27;
 
     sc_signal<sc_uint<27>> ext_27_in;
+    sc_signal<sc_uint<5>> opcode_signal;
 
     void segmentar_instrucoes() {
         read_reg_1.write(instruction_in.read().range(26,23));
@@ -85,7 +89,7 @@ SC_MODULE(IdStage) {
         rt_out.write(instruction_in.read().range(22,19));
         rd_out.write(instruction_in.read().range(18,15));
 
-        pc_out.write(pc_in.read()); // SO vai repassar o endereço para o reg id_ex
+        pc_out.write(pc_in.read()); 
     }
 
     SC_CTOR(IdStage) {
@@ -96,6 +100,7 @@ SC_MODULE(IdStage) {
         ext_19 = new EXTENSOR_19("Ext19");
         ext_23 = new EXTENSOR_23("Ext23");
         ext_27 = new EXTENSOR_27("Ext27");
+        mux_dest = new MUX_3<4>("MuxDest");
 
         SC_METHOD(segmentar_instrucoes);
         sensitive << instruction_in << pc_in;
@@ -114,6 +119,13 @@ SC_MODULE(IdStage) {
         uc->reg_dest(reg_dest);
         uc->pc_source(pc_source);
         uc->alu_op(alu_op);
+
+        // Mapeamento do Mux de Destino
+        mux_dest->in0(rt_out);
+        mux_dest->in1(rd_out);
+        mux_dest->in2(rs_out);
+        mux_dest->sel(reg_dest);
+        mux_dest->out(reg_dest_address_out);
 
         // Mapeamento do Banco de Registradores
         reg_file->clk(clk);
