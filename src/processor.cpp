@@ -118,6 +118,7 @@ SC_MODULE(Processor) {
     // Sinais MEM Stage
     sc_signal<sc_uint<32>> mem_read_data;
     sc_signal<sc_uint<32>> mem_ula_result;
+    sc_signal<sc_uint<32>> mem_address;
     sc_signal<sc_uint<4>> mem_dest_reg;
     sc_signal<bool> mem_reg_write;
     sc_signal<sc_uint<2>> mem_mem_to_reg;
@@ -130,7 +131,11 @@ SC_MODULE(Processor) {
     sc_signal<bool> mem_wb_reg_write;
 
     // Sinais WB Stage
+    sc_signal<sc_uint<32>> wb_read_data;
+    sc_signal<sc_uint<32>> wb_ula_result;
     sc_signal<sc_uint<32>> wb_out;
+    sc_signal<sc_uint<4>> wb_dest_reg;
+    sc_signal<bool> wb_reg_write;
 
     // Sinais Hazard Detection Unit
     sc_signal<bool> hazard_pc_write;

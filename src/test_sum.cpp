@@ -49,7 +49,7 @@ int sc_main(int argc, char* argv[]) {
         sc_start(10, SC_NS);
         cout << "Ciclo " << i 
              << " | PC: " << processor.if_pc_out.read() 
-             << " | Instr: " << processor.if_instr_out.read().to_string(SC_HEX)
+             << " | Instr: " << processor.if_instr_out.read().to_string(SC_BIN, false).substr(1)
              << " | WB_Dest: R" << (int)processor.mem_wb_dest_reg.read() 
              << " | WB_Data: " << (int)processor.wb_out.read() 
              << " | M2R: " << (int)processor.mem_wb_mem_to_reg.read()

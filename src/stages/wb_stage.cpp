@@ -28,36 +28,39 @@
 #include "../PipelineUnits/hazard_detection_unit.cpp"
 
 SC_MODULE(WbStage) {
-
-    // Sinais globais
     sc_in<bool> clk;
     sc_in<bool> reset;
 
-    sc_in<sc_uint<32>> read_data_in; // Palavra da mem. de dados do estagio MEM
-    sc_in<sc_uint<32>> ula_result_in; // Palavra resultante da ULA no estagio EX
-    sc_in<sc_uint<2>> mem_to_reg; // Entrada passada pelos estagios EX e MEM
+    sc_in<sc_uint<32>> read_data_in;
+    sc_in<sc_uint<32>> ula_result_in;
+    sc_in<sc_uint<2>> mem_to_reg;
+    sc_in<sc_uint<4>> write_reg_dest_in;
 
-    sc_out<sc_uint<32>> wb_out; // Palavra selcionada pelo MUX
+    sc_out<sc_uint<32>> wb_out;
+    sc_out<sc_uint<4>> write_reg_dest_out;
 
-    // Sinal auxiliar
     sc_signal<sc_uint<32>> dummy_in2;
 
-    // Mux
     MUX_3<>* mux;
+
+    // Processo combinacional que propaga o reg_dest
+    void pass_dest_reg() {
+        write_reg_dest_out.write(write_reg_dest_in.read());
+    }
 
     SC_CTOR(WbStage) {
         mux = new MUX_3<>("Mux_WB");
+        mux->in0(ula_result_in);
+        mux->in1(read_data_in);
+        mux->in2(dummy_in2);
+        mux->sel(mem_to_reg);
+        mux->out(wb_out);
 
-        // Mapeamento das portas do MUX de Write Back
-        mux->in0(ula_result_in); // Entrada 0: Resultado da ULA
-        mux->in1(read_data_in);  // Entrada 1: Dado lido da memoria
-        mux->in2(dummy_in2);     // Entrada 2: Nao utilizada neste estagio
-        mux->sel(mem_to_reg);    // Seletor
-        mux->out(wb_out);        // Saida selecionada para Write Back
+        SC_METHOD(pass_dest_reg);
+        sensitive << write_reg_dest_in;
     }
 
-    ~WbStage() {
-    }
+    ~WbStage() { delete mux; }
 };
 
 #endif // PROCESSOR_H
