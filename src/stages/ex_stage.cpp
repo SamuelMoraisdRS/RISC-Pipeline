@@ -161,6 +161,8 @@ SC_MODULE(ExStage) {
         ula->operand_a(mux_alu_a_out);
         ula->operand_b(mux_alu_src_b_out);
         ula->op(alu_op_in);
+        ula->clk(clk);
+        ula->reset(reset);
         ula->result(ula_result_out);
         ula->jump_cond(is_jump_out);
 
