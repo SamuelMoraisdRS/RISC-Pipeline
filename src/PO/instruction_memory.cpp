@@ -26,9 +26,10 @@ SC_MODULE(InstructionMemory) {
         
         int i = 0;
         std::string line;
-        // Lê as instruções em formato binário do arquivo (ex: 00100000000010000000000000000101)
         while (file >> line && i < 1024) {
-            memory[i] = std::bitset<32>(line).to_ulong();
+            // Converte de Hexadecimal (ex: 0x7008000A ou 7008000A) para unsigned long
+            memory[i] = (sc_uint<32>)std::stoul(line, nullptr, 16);
+            if (i < 5) std::cout << "IMEM DEBUG | Instrucao " << i << ": " << std::hex << (unsigned int)memory[i] << " lida." << std::endl;
             i++;
         }
         file.close();
