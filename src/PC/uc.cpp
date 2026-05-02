@@ -23,6 +23,7 @@ SC_MODULE(ControlUnit) {
 
     void combined_logic() {
         sc_uint<5> op = opcode.read();
+        if (op != 0) cout << "UC DEBUG | Opcode: " << op.to_int() << " | M2R: " << (op == 14 ? 1 : 0) << endl;
         
         reg_dest.write(0b00);
         pc_source.write(0b00);
@@ -38,26 +39,29 @@ SC_MODULE(ControlUnit) {
         mem_write.write(false);
         
         if (op >= 0b00000 && op <= 0b00110) {
-            alu_src_b.write(false);
+            alu_src_b.write(0);
             alu_op.write(opcode.read());
-            reg_dest.write(0b00);
+            reg_dest.write(1); // Seleciona Rd
             reg_write.write(true);
             mem_to_reg.write(0);
+            addr_bd_or_dir.write(1);
         } 
         else if (op <= 0b01101) {
-            alu_src_b.write(true);
+            alu_src_b.write(1);
             alu_op.write(opcode.read() - 7);
-            reg_dest.write(0b01);
+            reg_dest.write(0b00); // Alterado para Rt para evitar conflito com Imediato
             reg_write.write(true);
             mem_to_reg.write(0);
+            addr_bd_or_dir.write(1);
         }
         else if (op == 0b01110) {
+            cout << "@" << sc_time_stamp() << " UC DEBUG | LW Opcode detected! Setting reg_dest to 0 (RT)" << endl;
             alu_src_b.write(1);
             alu_op.write(0b0001);
             mem_read.write(true);
             mem_write.write(false);
             addr_bd_or_dir.write(0);
-            reg_dest.write(0b01);
+            reg_dest.write(0b00); // Seleciona Rt (Bits 22-19) como destino para LW
             reg_write.write(true);
             mem_to_reg.write(1);
         }
@@ -76,7 +80,7 @@ SC_MODULE(ControlUnit) {
             mem_read.write(true);
             mem_write.write(false);
             addr_bd_or_dir.write(1);
-            reg_dest.write(0b10);
+            reg_dest.write(0b10); // Seleciona rs_in (Bits 26-23) para Tipo 4
             reg_write.write(true);
             mem_to_reg.write(1);
         }

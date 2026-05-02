@@ -60,7 +60,7 @@ SC_MODULE(IfStage) {
         // Lógica de seleção do próximo PC. Trocar por mux
         if (id_jump_taken.read()) {
             pc_out_mux.write(id_jump_pc_in.read());
-        } else if (pc_source.read() == 0b01) {
+        } else if (pc_source.read() == 0b01 || pc_source.read() == 0b10) {
             pc_out_mux.write(branch_pc_in.read());
         } else {
             pc_out_mux.write(next_pc);
