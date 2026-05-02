@@ -19,8 +19,7 @@ SC_MODULE(RegisterFile) {
     sc_out<sc_uint<32>> read_data1;
     sc_out<sc_uint<32>> read_data2;
 
-private:
-
+public:
     // 16 registradores de 32 bits
     sc_uint<32> regs[16];
     
@@ -61,13 +60,13 @@ public:
 
         regs[0] = 0;
 
-        // Processo de leitura
+        // Processo de leitura: combinacional
         SC_METHOD(read_registers);
-        sensitive << read_reg1 << read_reg2 << regs_changed;
+        sensitive << read_reg1 << read_reg2;
 
-        // Processo de escrita
+        // Processo de escrita: borda de descida
         SC_METHOD(write_register);
-        sensitive << clk.pos();
+        sensitive << clk.neg();
     }
 };
 

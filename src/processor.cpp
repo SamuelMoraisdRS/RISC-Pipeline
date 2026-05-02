@@ -96,6 +96,10 @@ SC_MODULE(Processor) {
     sc_signal<sc_uint<2>> id_ex_mem_to_reg;
     sc_signal<bool> id_ex_reg_write;
 
+    sc_signal<sc_uint<4>> id_reg_dest_address;
+    sc_signal<sc_uint<4>> muxed_reg_dest_address;
+    sc_signal<sc_uint<4>> id_ex_reg_dest_address;
+    
     // Sinais EX Stage
     sc_signal<sc_uint<32>> ex_data_mem_addr;
     sc_signal<sc_uint<32>> ex_ula_result;
@@ -104,6 +108,9 @@ SC_MODULE(Processor) {
     sc_signal<sc_uint<32>> ex_jump_pc;
     sc_signal<sc_uint<4>> ex_dest_reg;
     sc_signal<sc_uint<2>> ex_pc_source;
+    sc_signal<bool> ex_branch_taken;
+    sc_signal<sc_uint<32>> ex_alu_a_debug;
+    sc_signal<sc_uint<32>> ex_alu_b_debug;
 
     // Sinais EX/MEM Register
     sc_signal<sc_uint<32>> ex_mem_address;
@@ -133,12 +140,18 @@ SC_MODULE(Processor) {
     sc_signal<sc_uint<32>> wb_out;
 
     // Sinais Hazard Detection Unit
+    sc_signal<sc_uint<32>> id_ex_instr;
+    sc_signal<sc_uint<32>> ex_mem_instr;
+    sc_signal<sc_uint<32>> mem_wb_instr;
     sc_signal<bool> hazard_pc_write;
     sc_signal<bool> hazard_if_id_write;
     sc_signal<bool> hazard_if_id_flush;
+    sc_signal<bool> hazard_id_ex_flush;
     sc_signal<sc_uint<2>> hazard_mux;
     sc_signal<sc_uint<4>> hdu_rs;
     sc_signal<sc_uint<4>> hdu_rt;
+    sc_signal<sc_uint<4>> hdu_rs_if;
+    sc_signal<sc_uint<4>> hdu_rt_if;
 
     // Sinais Forward Unit
     sc_signal<sc_uint<2>> fwd_a;
@@ -168,53 +181,90 @@ SC_MODULE(Processor) {
     // Conversores para o EX Stage
     sc_signal<sc_uint<2>> ex_uint_imed_size;
     sc_signal<sc_uint<2>> ex_uint_alu_src_b;
+    sc_signal<bool> hazard_bubble_sig;
+
+    void process_bubble() {
+        hazard_bubble_sig.write(hazard_mux.read() == 0);
+    }
     sc_signal<sc_uint<2>> ex_uint_addr_bd_or_dir;
     sc_signal<sc_uint<2>> ex_uint_store_bd_or_dir;
 
     // Métodos Auxiliares
-    void constant_signals() {
-        const_zero_bool.write(false);
-        const_zero_2b.write(0);
+    void update_hdu_inputs() {
+        // RS: [26-23], RT: [22-19] conforme doc.txt
         hdu_rs.write(if_id_instr.read().range(26,23));
         hdu_rt.write(if_id_instr.read().range(22,19));
     }
+    void trace_pipeline() {
+        if (reset.read()) return;
+        cout << "TRACE | STAGES | "
+             << "IF: " << if_instr_out.read().to_string(SC_HEX) << " | "
+             << "ID: " << if_id_instr.read().to_string(SC_HEX) << " | "
+             << "EX: " << id_ex_instr.read().to_string(SC_HEX) << " | "
+             << "MEM: " << ex_mem_instr.read().to_string(SC_HEX) << " | "
+             << "WB: " << mem_wb_instr.read().to_string(SC_HEX) << endl;
 
-    void hazard_mux_logic() {
-        if (hazard_mux.read() == 0) { // Bolha (Zera controles do ID/EX)
-            muxed_imed_size.write(0);
-            muxed_alu_src_b.write(0);
-            muxed_addr_bd_or_dir.write(0);
-            muxed_store_bd_or_dir.write(0);
+        cout << "TRACE | REGS   | "
+             << "R1: " << id_stage->reg_file->regs[1]
+             << " | R2: " << id_stage->reg_file->regs[2]
+             << " | R3: " << id_stage->reg_file->regs[3]
+             << " | MuxH: " << hazard_mux.read()
+             << " | PCW: " << hazard_pc_write.read()
+             << endl;
+    }
+
+    void update_hdu_if() {
+        hdu_rs_if.write(if_instr_out.read().range(26,23));
+        hdu_rt_if.write(if_instr_out.read().range(22,19));
+    }
+
+    void hazard_mux_process() {
+        if (hazard_mux.read() == 0) { // Inserir Bolha
             muxed_reg_write.write(false);
             muxed_mem_read.write(false);
             muxed_mem_write.write(false);
+            // muxed_alu_op.write(0);
             muxed_reg_dest.write(0);
-            muxed_pc_source.write(0);
+            muxed_alu_src_b.write(0);
             muxed_mem_to_reg.write(0);
-            muxed_alu_op.write(0);
-        } else { // Normal
-            muxed_imed_size.write(id_imed_size.read());
-            muxed_alu_src_b.write(id_alu_src_b.read());
-            muxed_addr_bd_or_dir.write(id_addr_bd_or_dir.read());
-            muxed_store_bd_or_dir.write(id_store_bd_or_dir.read());
+            muxed_imed_size.write(0);
+            muxed_addr_bd_or_dir.write(0);
+            muxed_store_bd_or_dir.write(0);
+            muxed_pc_source.write(0);
+            muxed_reg_dest_address.write(0);
+        } else { // Sinais Reais
             muxed_reg_write.write(id_reg_write.read());
             muxed_mem_read.write(id_mem_read.read());
             muxed_mem_write.write(id_mem_write.read());
-            muxed_reg_dest.write(id_reg_dest.read());
-            muxed_pc_source.write(id_pc_source.read());
-            muxed_mem_to_reg.write(id_mem_to_reg.read());
             muxed_alu_op.write(id_alu_op.read());
+            muxed_reg_dest.write(id_reg_dest.read());
+            muxed_alu_src_b.write(id_alu_src_b.read());
+            muxed_mem_to_reg.write(id_mem_to_reg.read());
+            muxed_imed_size.write(id_imed_size.read());
+            muxed_addr_bd_or_dir.write(id_addr_bd_or_dir.read());
+            muxed_store_bd_or_dir.write(id_store_bd_or_dir.read());
+            muxed_pc_source.write(id_pc_source.read());
+            muxed_reg_dest_address.write(id_reg_dest_address.read());
         }
     }
 
     SC_CTOR(Processor) {
-        // Inicialização Auxiliar
-        SC_METHOD(constant_signals);
-        sensitive << if_id_instr << id_ex_imed_size << id_ex_alu_src_b << id_ex_addr_bd_or_dir << id_ex_store_bd_or_dir;
+        SC_METHOD(update_hdu_if);
+        sensitive << if_instr_out;
 
-        SC_METHOD(hazard_mux_logic);
-        sensitive << hazard_mux << id_imed_size << id_alu_src_b << id_addr_bd_or_dir << id_store_bd_or_dir 
-                  << id_reg_write << id_mem_read << id_mem_write << id_reg_dest << id_pc_source << id_alu_op << id_mem_to_reg;
+        SC_METHOD(hazard_mux_process);
+        sensitive << hazard_mux << id_reg_write << id_mem_read << id_mem_write 
+                  << id_alu_op << id_reg_dest << id_alu_src_b << id_mem_to_reg 
+                  << id_imed_size << id_addr_bd_or_dir << id_store_bd_or_dir << id_pc_source
+                  << id_reg_dest_address;
+
+        SC_METHOD(trace_pipeline);
+        sensitive << clk.pos();
+        SC_METHOD(update_hdu_inputs);
+        sensitive << if_id_instr;
+
+        SC_METHOD(process_bubble);
+        sensitive << hazard_mux;
 
         // Instanciação
         if_stage = new IfStage("IfStage");
@@ -228,8 +278,8 @@ SC_MODULE(Processor) {
         ex_mem_reg = new ExMemRegister("ExMemReg");
         mem_wb_reg = new MemWbRegister("MemWbReg");
 
-        forward_unit = new ForwardUnit("ForwardUnit");
         hazard_unit = new HazardDetectionUnit("HazardUnit");
+        forward_unit = new ForwardUnit("ForwardUnit");
 
         // ==========================================
         // MAPEAMENTO - IF STAGE
@@ -287,6 +337,7 @@ SC_MODULE(Processor) {
         id_stage->imm_23_out(id_imm_23);
         id_stage->imm_27_out(id_imm_27);
         id_stage->pc_out(id_pc_out);
+        id_stage->reg_dest_address_out(id_reg_dest_address);
         id_stage->rs_out(id_rs);
         id_stage->rt_out(id_rt);
         id_stage->rd_out(id_rd);
@@ -296,7 +347,7 @@ SC_MODULE(Processor) {
         // ==========================================
         id_ex_reg->clk(clk);
         id_ex_reg->reset(reset);
-        id_ex_reg->cond_jump_flush(const_zero_bool);
+        id_ex_reg->cond_jump_flush(hazard_id_ex_flush); 
 
         id_ex_reg->next_instruction_address_in(id_pc_out);
         id_ex_reg->data_read_1_in(id_data_read_1);
@@ -306,6 +357,9 @@ SC_MODULE(Processor) {
         id_ex_reg->rs_in(id_rs);
         id_ex_reg->rt_in(id_rt);
         id_ex_reg->rd_in(id_rd);
+        id_ex_reg->instruction_in(if_id_instr);
+        id_ex_reg->instruction_out(id_ex_instr);
+        id_ex_reg->reg_dest_address_in(muxed_reg_dest_address);
 
         id_ex_reg->alu_op_in(muxed_alu_op);
         id_ex_reg->reg_dest_in(muxed_reg_dest);
@@ -318,6 +372,8 @@ SC_MODULE(Processor) {
         id_ex_reg->mem_write_in(muxed_mem_write);
         id_ex_reg->mem_to_reg_in(muxed_mem_to_reg);
         id_ex_reg->reg_write_in(muxed_reg_write);
+        
+        id_ex_reg->bubble(hazard_bubble_sig);
 
         id_ex_reg->next_instruction_address_out(id_ex_pc);
         id_ex_reg->data_read_1_out(id_ex_data_1);
@@ -327,6 +383,7 @@ SC_MODULE(Processor) {
         id_ex_reg->rs_out(id_ex_rs);
         id_ex_reg->rt_out(id_ex_rt);
         id_ex_reg->rd_out(id_ex_rd);
+        id_ex_reg->reg_dest_address_out(id_ex_reg_dest_address);
         
         id_ex_reg->alu_op_out(id_ex_alu_op);
         id_ex_reg->reg_dest_out(id_ex_reg_dest);
@@ -351,6 +408,7 @@ SC_MODULE(Processor) {
         ex_stage->data_read_2_in(id_ex_data_2);
         ex_stage->imm_19_in(id_ex_imm_19);
         ex_stage->imm_23_in(id_ex_imm_23);
+        ex_stage->reg_dest_address_in(id_ex_reg_dest_address);
         ex_stage->pc_plus_4_in(id_ex_pc);
         
         ex_stage->imed_size_in(id_ex_imed_size); 
@@ -358,10 +416,7 @@ SC_MODULE(Processor) {
         ex_stage->alu_op_in(id_ex_alu_op);
         ex_stage->store_bd_or_dir_in(id_ex_store_bd_or_dir);
         ex_stage->addr_bd_or_dir_in(id_ex_addr_bd_or_dir);
-        ex_stage->reg_dest_in(id_ex_reg_dest);
         ex_stage->pc_source_in(id_ex_pc_source);
-        ex_stage->rt_in(id_ex_rt);
-        ex_stage->rd_in(id_ex_rd);
 
         ex_stage->fwd_a_in(fwd_a);
         ex_stage->fwd_b_in(fwd_b);
@@ -374,6 +429,9 @@ SC_MODULE(Processor) {
         ex_stage->branch_pc_out(ex_branch_pc);
         ex_stage->dest_reg_out(ex_dest_reg);
         ex_stage->pc_source_out(ex_pc_source);
+        ex_stage->branch_taken_out(ex_branch_taken);
+        ex_stage->alu_a_debug(ex_alu_a_debug);
+        ex_stage->alu_b_debug(ex_alu_b_debug);
 
         // ==========================================
         // MAPEAMENTO - EX/MEM REGISTER
@@ -385,6 +443,8 @@ SC_MODULE(Processor) {
         ex_mem_reg->result_alu_in(ex_ula_result);
         ex_mem_reg->write_data_in(ex_store_data);
         ex_mem_reg->reg_dest_address_in(ex_dest_reg);
+        ex_mem_reg->instruction_in(id_ex_instr);
+        ex_mem_reg->instruction_out(ex_mem_instr);
 
         ex_mem_reg->mem_read_in(id_ex_mem_read);
         ex_mem_reg->mem_write_in(id_ex_mem_write);
@@ -426,6 +486,8 @@ SC_MODULE(Processor) {
         mem_wb_reg->clk(clk);
         mem_wb_reg->reset(reset);
         mem_wb_reg->result_alu_in(mem_ula_result);
+        mem_wb_reg->instruction_in(ex_mem_instr);
+        mem_wb_reg->instruction_out(mem_wb_instr);
         mem_wb_reg->read_data_memory_in(mem_read_data);
         mem_wb_reg->reg_dest_address_in(mem_dest_reg);
         mem_wb_reg->mem_to_reg_in(mem_mem_to_reg);
@@ -452,13 +514,19 @@ SC_MODULE(Processor) {
         // ==========================================
         hazard_unit->reg_src1(hdu_rs);
         hazard_unit->reg_src2(hdu_rt);
-        hazard_unit->id_ex_reg_dest(ex_dest_reg); // Registrador de destino sendo calculado no EX
+        // Comparamos a instrução em ID (hdu_rs/rt) com a que está em EX (saída de ID/EX)
+        hazard_unit->id_ex_reg_dest(id_ex_reg_dest_address); 
         hazard_unit->id_ex_mem_read(id_ex_mem_read);
+        // Comparamos a instrução em ID com a que está em MEM (saída de EX/MEM)
+        hazard_unit->ex_mem_reg_dest(ex_mem_dest_reg);
+        hazard_unit->ex_mem_mem_read(ex_mem_mem_read);
         hazard_unit->is_jump(id_is_uncond_jump);
         
         hazard_unit->pc_write(hazard_pc_write);
         hazard_unit->if_id_write(hazard_if_id_write);
         hazard_unit->if_id_flush(hazard_if_id_flush);
+        hazard_unit->id_ex_flush(hazard_id_ex_flush);
+        hazard_unit->branch_taken_ex(ex_branch_taken);
         hazard_unit->hazard_mux(hazard_mux);
 
         forward_unit->reg_src1(id_ex_rs);
@@ -467,6 +535,7 @@ SC_MODULE(Processor) {
         forward_unit->mem_wb_reg_dest(mem_wb_dest_reg);
         forward_unit->ex_mem_reg_write(ex_mem_reg_write);
         forward_unit->mem_wb_reg_write(mem_wb_reg_write);
+        forward_unit->ex_mem_mem_read(ex_mem_mem_read);
         forward_unit->fwd_a(fwd_a);
         forward_unit->fwd_b(fwd_b);
     }
