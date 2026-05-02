@@ -28,6 +28,9 @@ private:
       } else if(if_id_write.read()) {
         next_instruction_address_out.write(next_instruction_address_in.read());
         instruction_out.write(instruction_in.read());
+        if (instruction_in.read() != 0) {
+            // cout << "PIPELINE | IF/ID | Capturou Instr: " << hex << instruction_in.read() << endl;
+        }
       }
     }
 
@@ -35,7 +38,7 @@ public:
 
     SC_CTOR(IfIdRegister) {
         SC_METHOD(store_information);
-        sensitive << clk.pos();
+        sensitive << clk.neg();
     }
 };
 

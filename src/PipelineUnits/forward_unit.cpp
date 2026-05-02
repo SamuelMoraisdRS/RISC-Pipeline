@@ -13,6 +13,7 @@ SC_MODULE(ForwardUnit) {
 
     sc_in<bool> ex_mem_reg_write;
     sc_in<bool> mem_wb_reg_write;
+    sc_in<bool> ex_mem_mem_read; // Novo: Indica se a instrução no MEM é um Load
 
     // Portas de Saída
     sc_out<sc_uint<2>> fwd_a;
@@ -21,21 +22,30 @@ SC_MODULE(ForwardUnit) {
 private:
 
     void detect_hazard() {
-        if (ex_mem_reg_write.read() && ex_mem_reg_dest.read() != 0 && ex_mem_reg_dest.read() == reg_src1.read()) {
-            fwd_a.write(0b01); // Use o dado que vem de EX/MEM
-        } else if (mem_wb_reg_write.read() && mem_wb_reg_dest.read() != 0 && mem_wb_reg_dest.read() == reg_src1.read()) {
-            fwd_a.write(0b10); // Use o dado que vem de MEM/WB
+        sc_uint<2> sel_a = 0;
+        sc_uint<2> sel_b = 0;
+
+        // Prioridade 1: EX/MEM (Só encaminha se NÃO for Load, pois Load ainda não tem o dado)
+        if (ex_mem_reg_write.read() && !ex_mem_mem_read.read() && ex_mem_reg_dest.read() != 0 && ex_mem_reg_dest.read() == reg_src1.read()) {
+            sel_a = 0b01; 
+        } 
+        // Prioridade 2: MEM/WB (Aqui o dado do Load já está disponível)
+        else if (mem_wb_reg_write.read() && mem_wb_reg_dest.read() != 0 && mem_wb_reg_dest.read() == reg_src1.read()) {
+            sel_a = 0b10; 
         } else {
-            fwd_a.write(0); // Use o dado lido originalmente do banco de registradores
+            sel_a = 0; 
         }
 
-        if (ex_mem_reg_write.read() && ex_mem_reg_dest.read() != 0 && ex_mem_reg_dest.read() == reg_src2.read()) {
-            fwd_b.write(0b01); // Use o dado que vem de EX/MEM
+        if (ex_mem_reg_write.read() && !ex_mem_mem_read.read() && ex_mem_reg_dest.read() != 0 && ex_mem_reg_dest.read() == reg_src2.read()) {
+            sel_b = 0b01; 
         } else if (mem_wb_reg_write.read() && mem_wb_reg_dest.read() != 0 && mem_wb_reg_dest.read() == reg_src2.read()) {
-            fwd_b.write(0b10); // Use o dado que vem de MEM/WB
+            sel_b = 0b10; 
         } else {
-            fwd_b.write(0); // Use o dado lido originalmente do banco de registradores
+            sel_b = 0; 
         }
+
+        fwd_a.write(sel_a);
+        fwd_b.write(sel_b);
     }
 
 public:
@@ -43,7 +53,7 @@ public:
     SC_CTOR(ForwardUnit) {
         SC_METHOD(detect_hazard);
         sensitive << reg_src1 << reg_src2 << ex_mem_reg_dest 
-                  << mem_wb_reg_dest << ex_mem_reg_write << mem_wb_reg_write;
+                  << mem_wb_reg_dest << ex_mem_reg_write << mem_wb_reg_write << ex_mem_mem_read;
     }
 };
 

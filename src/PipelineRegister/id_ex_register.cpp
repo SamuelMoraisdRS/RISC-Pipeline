@@ -9,6 +9,7 @@ SC_MODULE(IdExRegister) {
     sc_in<bool> clk;
     sc_in<bool> reset;
     sc_in<bool> cond_jump_flush;
+    sc_in<bool> bubble; // Porta para inserir bolha (Stall)
 
     sc_in<sc_uint<32>> next_instruction_address_in;
     sc_in<sc_uint<32>> data_read_1_in;
@@ -18,6 +19,8 @@ SC_MODULE(IdExRegister) {
     sc_in<sc_uint<4>> rs_in;
     sc_in<sc_uint<4>> rt_in;
     sc_in<sc_uint<4>> rd_in;
+    sc_in<sc_uint<32>> instruction_in;
+    sc_in<sc_uint<4>> reg_dest_address_in;
 
     // EX (Entrada)
     sc_in<sc_uint<4>> alu_op_in;
@@ -43,6 +46,8 @@ SC_MODULE(IdExRegister) {
     sc_out<sc_uint<4>> rs_out;
     sc_out<sc_uint<4>> rt_out;
     sc_out<sc_uint<4>> rd_out;
+    sc_out<sc_uint<32>> instruction_out;
+    sc_out<sc_uint<4>> reg_dest_address_out;
 
     // EX (Saída)
     sc_out<sc_uint<4>> alu_op_out;
@@ -62,7 +67,7 @@ SC_MODULE(IdExRegister) {
 private:
 
     void store_information() {
-      if (reset.read() || cond_jump_flush.read()) {
+      if (reset.read() || cond_jump_flush.read() || bubble.read()) {
         next_instruction_address_out.write(0);
         data_read_1_out.write(0);
         data_read_2_out.write(0);
@@ -71,6 +76,7 @@ private:
         rs_out.write(0);
         rt_out.write(0);
         rd_out.write(0);
+        instruction_out.write(0);
         
         // EX
         alu_op_out.write(0);
@@ -95,6 +101,8 @@ private:
         rs_out.write(rs_in.read());
         rt_out.write(rt_in.read());
         rd_out.write(rd_in.read());
+        reg_dest_address_out.write(reg_dest_address_in.read());
+        instruction_out.write(instruction_in.read());
 
         // EX
         alu_op_out.write(alu_op_in.read());
