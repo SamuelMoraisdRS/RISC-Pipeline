@@ -12,6 +12,7 @@ SC_MODULE(MemWbRegister) {
     sc_in<sc_uint<32>> result_alu_in;
     sc_in<sc_uint<32>> read_data_memory_in;
     sc_in<sc_uint<4>> reg_dest_address_in; 
+    sc_in<sc_uint<32>> instruction_in;
 
     // WB (Entrada)
     sc_in<sc_uint<2>> mem_to_reg_in;
@@ -21,6 +22,7 @@ SC_MODULE(MemWbRegister) {
     sc_out<sc_uint<32>> result_alu_out;
     sc_out<sc_uint<32>> read_data_memory_out;
     sc_out<sc_uint<4>> reg_dest_address_out; 
+    sc_out<sc_uint<32>> instruction_out;
 
     // WB (Saída)
     sc_out<sc_uint<2>> mem_to_reg_out;
@@ -33,6 +35,7 @@ private:
         result_alu_out.write(0);
         read_data_memory_out.write(0);
         reg_dest_address_out.write(0);
+        instruction_out.write(0);
         
         // WB 
         mem_to_reg_out.write(0);
@@ -41,6 +44,7 @@ private:
         result_alu_out.write(result_alu_in.read());
         read_data_memory_out.write(read_data_memory_in.read());
         reg_dest_address_out.write(reg_dest_address_in.read());
+        instruction_out.write(instruction_in.read());
 
         // WB 
         mem_to_reg_out.write(mem_to_reg_in.read());

@@ -13,6 +13,7 @@ SC_MODULE(ExMemRegister) {
     sc_in<sc_uint<32>> result_alu_in;
     sc_in<sc_uint<32>> write_data_in;
     sc_in<sc_uint<4>> reg_dest_address_in; 
+    sc_in<sc_uint<32>> instruction_in;
 
     // M (Entrada)
     sc_in<bool> mem_read_in;
@@ -26,6 +27,7 @@ SC_MODULE(ExMemRegister) {
     sc_out<sc_uint<32>> result_alu_out;
     sc_out<sc_uint<32>> write_data_out;
     sc_out<sc_uint<4>> reg_dest_address_out;
+    sc_out<sc_uint<32>> instruction_out;
 
     // M (Saída)
     sc_out<bool> mem_read_out;
@@ -42,6 +44,7 @@ private:
         result_alu_out.write(0);
         write_data_out.write(0);
         reg_dest_address_out.write(0);
+        instruction_out.write(0);
         
         // M 
         mem_read_out.write(false);
@@ -54,6 +57,7 @@ private:
         result_alu_out.write(result_alu_in.read());
         write_data_out.write(write_data_in.read());
         reg_dest_address_out.write(reg_dest_address_in.read());
+        instruction_out.write(instruction_in.read());
 
         // M 
         mem_read_out.write(mem_read_in.read());
