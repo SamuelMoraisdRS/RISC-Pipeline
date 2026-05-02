@@ -19,7 +19,6 @@ SC_MODULE(RegisterFile) {
     sc_out<sc_uint<32>> read_data1;
     sc_out<sc_uint<32>> read_data2;
 
-private:
 
     // 16 registradores de 32 bits
     sc_uint<32> regs[16];
@@ -49,8 +48,6 @@ private:
         // Atualiza saídas após escrita
         regs_changed.notify();
     }
-
-public:
 
     SC_CTOR(RegisterFile) {
 

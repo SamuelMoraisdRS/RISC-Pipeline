@@ -4,7 +4,7 @@
 #include <systemc.h>
 
 // Includes dos Componentes da Via de Dados (PO)
-#include "PO/data_memory.cpp"
+#include "../PO/data_memory.cpp"
 
 SC_MODULE(MemStage) {
 

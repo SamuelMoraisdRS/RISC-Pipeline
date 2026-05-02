@@ -4,28 +4,28 @@
 #include <systemc.h>
 
 // Includes dos Componentes da Via de Dados (PO)
-#include "PO/contador_programa.cpp"
-#include "PO/instruction_memory.cpp"
-#include "PO/register_file.cpp"
-#include "PO/ula.cpp"
-#include "PO/data_memory.cpp"
-#include "PO/extensor_19.cpp"
-#include "PO/extensor_23.cpp"
-#include "PO/extensor_27.cpp"
-#include "PO/mux_3.cpp"
+#include "../PO/contador_programa.cpp"
+#include "../PO/instruction_memory.cpp"
+#include "../PO/register_file.cpp"
+#include "../PO/ula.cpp"
+#include "../PO/data_memory.cpp"
+#include "../PO/extensor_19.cpp"
+#include "../PO/extensor_23.cpp"
+#include "../PO/extensor_27.cpp"
+#include "../PO/mux_3.cpp"
 
 // Includes da Unidade de Controle (PC)
-#include "PC/uc.cpp"
+#include "../PC/uc.cpp"
 
 // Includes dos Registradores de Pipeline
-#include "PipelineRegister/if_id_register.cpp"
-#include "PipelineRegister/id_ex_register.cpp"
-#include "PipelineRegister/ex_mem_register.cpp"
-#include "PipelineRegister/mem_wb_register.cpp"
+#include "../PipelineRegister/if_id_register.cpp"
+#include "../PipelineRegister/id_ex_register.cpp"
+#include "../PipelineRegister/ex_mem_register.cpp"
+#include "../PipelineRegister/mem_wb_register.cpp"
 
 // Includes das Unidades de Tratamento de Dependências
-#include "PipelineUnits/forward_unit.cpp"
-#include "PipelineUnits/hazard_detection_unit.cpp"
+#include "../PipelineUnits/forward_unit.cpp"
+#include "../PipelineUnits/hazard_detection_unit.cpp"
 
 SC_MODULE(WbStage) {
 
