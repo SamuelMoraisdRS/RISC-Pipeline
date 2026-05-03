@@ -10,7 +10,6 @@ SC_MODULE(HazardDetectionUnit) {
     sc_in<sc_uint<4>> reg_src2; // Vai vir dos bits [22-19] da instrução no registrador IF/ID
     sc_in<sc_uint<4>> id_ex_reg_dest; // Vai vir da saída do MUX 1 (que está no estágio EX)
     sc_in<bool> id_ex_mem_read;
-    sc_in<sc_uint<4>> ex_mem_reg_dest;
     sc_in<bool> is_jump; // Indica se ocorreu um salto incondicional, vem do ID
     sc_in<bool> branch_taken_ex; // Indica se um branch foi tomado no estágio EX
 
@@ -58,7 +57,7 @@ public:
     SC_CTOR(HazardDetectionUnit) {
         SC_METHOD(detect_hazard);
         sensitive << reg_src1 << reg_src2 << id_ex_reg_dest << id_ex_mem_read 
-                  << ex_mem_reg_dest << is_jump << branch_taken_ex;
+                 << is_jump << branch_taken_ex;
     }
 };
 

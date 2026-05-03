@@ -342,7 +342,7 @@ SC_MODULE(Processor) {
         id_stage->rt_out(id_rt);
         id_stage->rd_out(id_rd);
 
-        // ==========================================
+        // ===========================ex_mem_reg_dest===============
         // MAPEAMENTO - ID/EX REGISTER
         // ==========================================
         id_ex_reg->clk(clk);
@@ -518,7 +518,6 @@ SC_MODULE(Processor) {
         hazard_unit->id_ex_reg_dest(id_ex_reg_dest_address); 
         hazard_unit->id_ex_mem_read(id_ex_mem_read);
         // Comparamos a instrução em ID com a que está em MEM (saída de EX/MEM)
-        hazard_unit->ex_mem_reg_dest(ex_mem_dest_reg);
         hazard_unit->is_jump(id_is_uncond_jump);
         
         hazard_unit->pc_write(hazard_pc_write);
