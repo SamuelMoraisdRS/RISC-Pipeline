@@ -67,7 +67,7 @@ int sc_main(int argc, char* argv[]) {
     reset.write(false);
     sc_start(5, SC_NS); 
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 20; i++) {
         sc_start(10, SC_NS);
         cout << "Ciclo " << i 
              << " | PC: " << processor.if_pc_out.read() 
@@ -77,7 +77,8 @@ int sc_main(int argc, char* argv[]) {
              << " | M2R: " << (int)processor.mem_wb_mem_to_reg.read()
              << " | R1: " << (int)processor.id_stage->reg_file->regs[1]
              << " | R2: " << (int)processor.id_stage->reg_file->regs[2] 
-             << " | R3: " << (int)processor.id_stage->reg_file->regs[3] << endl;
+             << " | R3: " << (int)processor.id_stage->reg_file->regs[3]
+             << " | R4: " << (int)processor.id_stage->reg_file->regs[4] << endl;
     }
 
     sc_close_vcd_trace_file(wf);
