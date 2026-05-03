@@ -12,13 +12,13 @@ int sc_main(int argc, char* argv[]) {
 
     // Carregar o programa de soma simples
     // Instruções:
-    // 0: LW R1, 10 -> R1 = Mem[10] (Valor 1)
-    // 1: LW R2, 11 -> R2 = Mem[11] (Valor 1)
-    // 2: ADD R1, R2 -> R1 = 1 + 1 = 2
+    // 0: ADDI R1, R0, 1 -> R1 = 1
+    // 1: SW R1, 10(R0)  -> Mem[10] = 1
+    // 2: SW R1, 11(R0)  -> Mem[11] = 1
+    // 3: LW R1, 10(R0)  -> R1 = Mem[10] (Valor 1)
+    // 4: LW R2, 11(R0)  -> R2 = Mem[11] (Valor 1)
+    // 5: ADD R3, R1, R2 -> R3 = 1 + 1 = 2
     
-    // Inicializar valores na memória de dados
-    processor.mem_stage->data_memory->memory[10] = 1;
-    processor.mem_stage->data_memory->memory[11] = 1;
 
     processor.if_stage->load_instructions("../src/sum_simple.bin");
 
