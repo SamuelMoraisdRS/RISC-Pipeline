@@ -3,11 +3,11 @@
 #include "mux_3.cpp"
 
 SC_MODULE(Testbench) {
-    sc_out<sc_int<32>> in0;
-    sc_out<sc_int<32>> in1;
-    sc_out<sc_int<32>> in2;
+    sc_out<sc_uint<32>> in0;
+    sc_out<sc_uint<32>> in1;
+    sc_out<sc_uint<32>> in2;
     sc_out<sc_uint<2>> sel;
-    sc_in<sc_int<32>> out;
+    sc_in<sc_uint<32>> out;
 
     void run_tests() {
         // Inicializa entradas
@@ -55,11 +55,11 @@ SC_MODULE(Testbench) {
 };
 
 int sc_main(int argc, char* argv[]) {
-    sc_signal<sc_int<32>> sig_in0;
-    sc_signal<sc_int<32>> sig_in1;
-    sc_signal<sc_int<32>> sig_in2;
+    sc_signal<sc_uint<32>> sig_in0;
+    sc_signal<sc_uint<32>> sig_in1;
+    sc_signal<sc_uint<32>> sig_in2;
     sc_signal<sc_uint<2>> sig_sel;
-    sc_signal<sc_int<32>> sig_out;
+    sc_signal<sc_uint<32>> sig_out;
 
     MUX_3 mux("mux");
     mux.in0(sig_in0);

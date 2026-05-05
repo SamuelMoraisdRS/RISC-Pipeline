@@ -1,20 +1,20 @@
 // Implementação do Extensor de Sinal
 
-#ifndef EXTENSOR_H
-#define EXTENSOR_H
+#ifndef EXTENSOR_19_H
+#define EXTENSOR_19_H
 
 #include <systemc.h>
 
 SC_MODULE(EXTENSOR_19) {
         
     // Entrada
-    sc_in<sc_int<19>> imm; /// Imediato
+    sc_in<sc_uint<19>> imm; /// Imediato
 
     // Saidas
-    sc_out<sc_int<32>> result; /// Resultado da operação aritmetica
+    sc_out<sc_uint<32>> result; /// Resultado da operação aritmetica
 
     void process_extensor_sinal() {
-        sc_int<32> res;
+        sc_uint<32> res;
         // Systemc faz a extensao implicitamente
         result.write(imm.read());
     };
@@ -28,8 +28,8 @@ SC_MODULE(EXTENSOR_19) {
 #ifndef MODO_TESTE
 // Simulacao
 int sc_main(int argc, char* argv[]) {
-    sc_signal<sc_int<19>> imm;
-    sc_signal<sc_int<32>> result;
+    sc_signal<sc_uint<19>> imm;
+    sc_signal<sc_uint<32>> result;
 
     EXTENSOR_19 ext("ext");
     ext.imm(imm);

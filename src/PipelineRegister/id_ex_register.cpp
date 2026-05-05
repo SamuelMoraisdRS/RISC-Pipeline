@@ -1,0 +1,132 @@
+#ifndef ID_EX_REGISTER_H
+#define ID_EX_REGISTER_H
+
+#include <systemc.h>
+
+SC_MODULE(IdExRegister) {
+
+    // Portas de Entrada
+    sc_in<bool> clk;
+    sc_in<bool> reset;
+    sc_in<bool> cond_jump_flush;
+    sc_in<bool> bubble; // Porta para inserir bolha (Stall)
+
+    sc_in<sc_uint<32>> next_instruction_address_in;
+    sc_in<sc_uint<32>> data_read_1_in;
+    sc_in<sc_uint<32>> data_read_2_in;
+    sc_in<sc_uint<32>> imm_19_in;
+    sc_in<sc_uint<32>> imm_23_in;
+    sc_in<sc_uint<4>> rs_in;
+    sc_in<sc_uint<4>> rt_in;
+    sc_in<sc_uint<4>> rd_in;
+    sc_in<sc_uint<32>> instruction_in;
+    sc_in<sc_uint<4>> reg_dest_address_in;
+
+    // EX (Entrada)
+    sc_in<sc_uint<4>> alu_op_in;
+    sc_in<sc_uint<2>> reg_dest_in;
+    sc_in<sc_uint<2>> pc_source_in;
+    sc_in<sc_uint<2>> imed_size_in;
+    sc_in<sc_uint<2>> alu_src_b_in;
+    sc_in<sc_uint<2>> addr_bd_or_dir_in;
+    sc_in<sc_uint<2>> store_bd_or_dir_in;
+    // M (Entrada)
+    sc_in<bool> mem_read_in;
+    sc_in<bool> mem_write_in;
+    // WB (Entrada)
+    sc_in<sc_uint<2>> mem_to_reg_in;
+    sc_in<bool> reg_write_in;
+
+    // Portas de Saída
+    sc_out<sc_uint<32>> next_instruction_address_out;
+    sc_out<sc_uint<32>> data_read_1_out;
+    sc_out<sc_uint<32>> data_read_2_out;
+    sc_out<sc_uint<32>> imm_19_out;
+    sc_out<sc_uint<32>> imm_23_out;
+    sc_out<sc_uint<4>> rs_out;
+    sc_out<sc_uint<4>> rt_out;
+    sc_out<sc_uint<4>> rd_out;
+    sc_out<sc_uint<32>> instruction_out;
+    sc_out<sc_uint<4>> reg_dest_address_out;
+
+    // EX (Saída)
+    sc_out<sc_uint<4>> alu_op_out;
+    sc_out<sc_uint<2>> reg_dest_out;
+    sc_out<sc_uint<2>> pc_source_out;
+    sc_out<sc_uint<2>> imed_size_out;
+    sc_out<sc_uint<2>> alu_src_b_out;
+    sc_out<sc_uint<2>> addr_bd_or_dir_out;
+    sc_out<sc_uint<2>> store_bd_or_dir_out;
+    // M (Saída)
+    sc_out<bool> mem_read_out;
+    sc_out<bool> mem_write_out;
+    // WB (Saída)
+    sc_out<sc_uint<2>> mem_to_reg_out;
+    sc_out<bool> reg_write_out;
+
+private:
+
+    void store_information() {
+      if (reset.read() || cond_jump_flush.read() || bubble.read()) {
+        next_instruction_address_out.write(0);
+        data_read_1_out.write(0);
+        data_read_2_out.write(0);
+        imm_19_out.write(0);
+        imm_23_out.write(0);
+        rs_out.write(0);
+        rt_out.write(0);
+        rd_out.write(0);
+        instruction_out.write(0);
+        
+        // EX
+        alu_op_out.write(0);
+        reg_dest_out.write(0);
+        pc_source_out.write(0);
+        imed_size_out.write(0);
+        alu_src_b_out.write(0);
+        addr_bd_or_dir_out.write(0);
+        store_bd_or_dir_out.write(0);
+        // M 
+        mem_read_out.write(false);
+        mem_write_out.write(false);
+        // WB 
+        mem_to_reg_out.write(0);
+        reg_write_out.write(false);
+      } else {
+        next_instruction_address_out.write(next_instruction_address_in.read());
+        data_read_1_out.write(data_read_1_in.read());
+        data_read_2_out.write(data_read_2_in.read());
+        imm_19_out.write(imm_19_in.read());
+        imm_23_out.write(imm_23_in.read());
+        rs_out.write(rs_in.read());
+        rt_out.write(rt_in.read());
+        rd_out.write(rd_in.read());
+        reg_dest_address_out.write(reg_dest_address_in.read());
+        instruction_out.write(instruction_in.read());
+
+        // EX
+        alu_op_out.write(alu_op_in.read());
+        reg_dest_out.write(reg_dest_in.read());
+        pc_source_out.write(pc_source_in.read());
+        imed_size_out.write(imed_size_in.read());
+        alu_src_b_out.write(alu_src_b_in.read());
+        addr_bd_or_dir_out.write(addr_bd_or_dir_in.read());
+        store_bd_or_dir_out.write(store_bd_or_dir_in.read());
+        // M 
+        mem_read_out.write(mem_read_in.read());
+        mem_write_out.write(mem_write_in.read());
+        // WB 
+        mem_to_reg_out.write(mem_to_reg_in.read());
+        reg_write_out.write(reg_write_in.read());
+      }
+    }
+
+public:
+
+    SC_CTOR(IdExRegister) {
+        SC_METHOD(store_information);
+        sensitive << clk.pos();
+    }
+};
+
+#endif 

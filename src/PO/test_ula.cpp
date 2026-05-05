@@ -4,16 +4,16 @@
 
 SC_MODULE(Testbench) {
     sc_out<sc_uint<4>> op;
-    sc_out<sc_int<32>> operand_a;
-    sc_out<sc_int<32>> operand_b;
-    sc_in<sc_int<32>> result;
+    sc_out<sc_uint<32>> operand_a;
+    sc_out<sc_uint<32>> operand_b;
+    sc_in<sc_uint<32>> result;
     sc_in<bool> jump_cond;
 
     void run_tests() {
         // Teste ADD
         operand_a.write(15);
         operand_b.write(10);
-        op.write(0b0000); // ADD
+        op.write(0b0001); // ADD
         wait(1, SC_NS);
         cout << "@" << sc_time_stamp() << " | op: ADD | A: 15 | B: 10 | Res: " << result.read() << " | JC: " << jump_cond.read() << endl;
         assert(result.read() == 25);
@@ -21,7 +21,7 @@ SC_MODULE(Testbench) {
         // Teste SUB
         operand_a.write(15);
         operand_b.write(10);
-        op.write(0b0001); // SUB
+        op.write(0b0010); // SUB
         wait(1, SC_NS);
         cout << "@" << sc_time_stamp() << " | op: SUB | A: 15 | B: 10 | Res: " << result.read() << " | JC: " << jump_cond.read() << endl;
         assert(result.read() == 5);
@@ -29,7 +29,7 @@ SC_MODULE(Testbench) {
         // Teste AND
         operand_a.write(0b1100);
         operand_b.write(0b1010);
-        op.write(0b0010); // AND
+        op.write(0b0000); // AND
         wait(1, SC_NS);
         cout << "@" << sc_time_stamp() << " | op: AND | A: 1100 | B: 1010 | Res: " << result.read() << endl;
         assert(result.read() == 0b1000);
@@ -55,7 +55,7 @@ SC_MODULE(Testbench) {
         op.write(0b0101); // NOT
         wait(1, SC_NS);
         cout << "@" << sc_time_stamp() << " | op: NOT | A: 15 | Res: " << result.read() << endl;
-        assert(result.read() == ~0b00000000000000000000000000001111);
+        assert(result.read() == 0xFFFFFFF0);
 
         // Teste CMP (a == b)
         operand_a.write(10);
@@ -105,9 +105,9 @@ SC_MODULE(Testbench) {
 
 int sc_main(int argc, char* argv[]) {
     sc_signal<sc_uint<4>> sig_op;
-    sc_signal<sc_int<32>> sig_operand_a;
-    sc_signal<sc_int<32>> sig_operand_b;
-    sc_signal<sc_int<32>> sig_result;
+    sc_signal<sc_uint<32>> sig_operand_a;
+    sc_signal<sc_uint<32>> sig_operand_b;
+    sc_signal<sc_uint<32>> sig_result;
     sc_signal<bool> sig_jump_cond;
 
     ULA ula("ula");

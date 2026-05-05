@@ -27,8 +27,16 @@ else()
     message(WARNING "SystemC não encontrado no caminho padrão. Executáveis podem depender de pacote global 'libsystemc-dev'. Exporte 'SYSTEMC_HOME' se necessário.")
 endif()
 
-# Inclui os subdiretórios prováveis para evitar erros de not found na busca por headers
-include_directories(src src/PO src/PC)
+# Inclui os subdiretórios para permitir que o compilador encontre os arquivos incluídos
+include_directories(
+    src 
+    src/PO 
+    src/PC 
+    src/stages 
+    src/PipelineRegister 
+    src/PipelineUnits
+    src/datapath
+)
 
 
 # ==============================================================================
@@ -36,15 +44,15 @@ include_directories(src src/PO src/PC)
 # ==============================================================================
 enable_testing()
 
-# Busca recursivamente todos os arquivos de nome "test_*.cpp" na pasta src/ e subpastas
-file(GLOB_RECURSE TEST_SOURCES "src/test_*.cpp" "src/*/test_*.cpp" "test/test_*.cpp")
+# Busca recursivamente todos os arquivos de nome "test_*.cpp" na pasta src/
+file(GLOB_RECURSE TEST_SOURCES "src/test_*.cpp" "src/*/test_*.cpp")
 
 if(TEST_SOURCES)
     message(STATUS "Testes encontrados:")
 endif()
 
 foreach(TEST_SRC ${TEST_SOURCES})
-    # Obtem o nome raiz do arquivo (ex: 'test_extensor_sinal' de 'test_extensor_sinal.cpp')
+    # Obtem o nome raiz do arquivo (ex: 'test_processor' de 'src/test_processor.cpp')
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
     message(STATUS "  - Configurando teste: ${TEST_NAME}")
     
@@ -58,7 +66,7 @@ foreach(TEST_SRC ${TEST_SOURCES})
         target_link_libraries(${TEST_NAME} systemc) # Assume que systemc está global no OS
     endif()
 
-    # Registra o teste para o CTest (Permite executar 'make test' no final)
+    # Registra o teste para o CTest
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach()
 
@@ -66,24 +74,15 @@ endforeach()
 # ==============================================================================
 # 2. MODO DE EXECUÇÃO FINAL (PROJETO INTEIRO DO PROCESSADOR)
 # ==============================================================================
-# Fontes individuais de cada módulo já desenvolvido:
-set(PROCESSOR_MODULES 
-    src/PO/extensor_sinal.cpp
-    src/PO/ula.cpp
-    src/PO/mux_3.cpp
-    src/PC/uc.cpp
-    src/PC/decoder.cpp
-    src/ula.cpp
-)
+# Nota: No momento, os componentes são incluídos diretamente nos arquivos de teste
+# via #include "arquivo.cpp". Por isso, não listamos módulos aqui para evitar
+# erros de múltiplas definições.
 
-# Caso já exista um arquivo principal (main.cpp/pipeline.cpp) que unifique
-# todos os módulos, este bloco ativará o executável principal. No SystemC,
-# o próprio arquivo que contém `sc_main()` seria nossa entrada.
 set(MAIN_FILE "src/main.cpp")
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MAIN_FILE}")
-    message(STATUS "Arquivo '${MAIN_FILE}' detectado. Executável do circuito final ('risc_pipeline') habilitado.")
-    add_executable(risc_pipeline ${MAIN_FILE} ${PROCESSOR_MODULES})
+    message(STATUS "Arquivo '${MAIN_FILE}' detectado. Executável 'risc_pipeline' habilitado.")
+    add_executable(risc_pipeline ${MAIN_FILE})
     
     if(SYSTEMC_LIB AND SYSTEMC_INCLUDE_DIR)
         target_link_libraries(risc_pipeline ${SYSTEMC_LIB})
@@ -91,6 +90,5 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MAIN_FILE}")
         target_link_libraries(risc_pipeline systemc)
     endif()
 else()
-    message(STATUS "Arquivo '${MAIN_FILE}' não encontrado. O executável principal ('risc_pipeline') unificado não foi gerado. Focando apenas em testes e componentes individuais por enquanto.")
-    message(STATUS "-> Para compilar o pipeline completo depois, crie o arquivo '${MAIN_FILE}' com sua rotina 'sc_main()'.")
+    message(STATUS "Focando em testes individuais. Para compilar o pipeline completo, crie '${MAIN_FILE}'.")
 endif()

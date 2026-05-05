@@ -5,14 +5,14 @@
 SC_MODULE(Testbench) {
     sc_out<bool> clk;
     sc_out<bool> reset;
-    sc_out<bool> load_jump;
-    sc_out<sc_int<32>> pc_jump;
-    sc_in<sc_int<32>> pc_out;
+    sc_out<bool> pc_write;
+    sc_out<sc_uint<32>> pc_jump;
+    sc_in<sc_uint<32>> pc_out;
 
     void run_tests() {
         // Reset inicial
         reset.write(true);
-        load_jump.write(false);
+        pc_write.write(false);
         pc_jump.write(0);
         wait(1, SC_NS);
         clk.write(true);
@@ -40,7 +40,7 @@ SC_MODULE(Testbench) {
         assert(pc_out.read() == 2);
 
         // Load Jump
-        load_jump.write(true);
+        pc_write.write(true);
         pc_jump.write(100);
         wait(1, SC_NS);
         clk.write(true);
@@ -51,7 +51,7 @@ SC_MODULE(Testbench) {
         assert(pc_out.read() == 100);
 
         // Volta ao incremento normal a partir do jump
-        load_jump.write(false);
+        pc_write.write(false);
         wait(1, SC_NS);
         clk.write(true);
         wait(1, SC_NS);
@@ -78,21 +78,21 @@ SC_MODULE(Testbench) {
 int sc_main(int argc, char* argv[]) {
     sc_signal<bool> sig_clk;
     sc_signal<bool> sig_reset;
-    sc_signal<bool> sig_load_jump;
-    sc_signal<sc_int<32>> sig_pc_jump;
-    sc_signal<sc_int<32>> sig_pc_out;
+    sc_signal<bool> sig_pc_write;
+    sc_signal<sc_uint<32>> sig_pc_jump;
+    sc_signal<sc_uint<32>> sig_pc_out;
 
     ContadorPrograma pc("pc");
     pc.clk(sig_clk);
     pc.reset(sig_reset);
-    pc.load_jump(sig_load_jump);
+    pc.pc_write(sig_pc_write);
     pc.pc_jump(sig_pc_jump);
     pc.pc_out(sig_pc_out);
 
     Testbench tb("tb");
     tb.clk(sig_clk);
     tb.reset(sig_reset);
-    tb.load_jump(sig_load_jump);
+    tb.pc_write(sig_pc_write);
     tb.pc_jump(sig_pc_jump);
     tb.pc_out(sig_pc_out);
 

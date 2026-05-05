@@ -5,16 +5,17 @@
 
 #include <systemc.h>
 
-SC_MODULE(MUX_3) {
+template <int WIDTH=32>
+struct MUX_3 : public sc_core::sc_module {
     
     // Entradas
-    sc_in<sc_int<32>> in0; /// Primeira entrada
-    sc_in<sc_int<32>> in1; /// Segunda entrada
-    sc_in<sc_int<32>> in2; /// Terceira entrada
+    sc_in<sc_uint<WIDTH>> in0; /// Primeira entrada
+    sc_in<sc_uint<WIDTH>> in1; /// Segunda entrada
+    sc_in<sc_uint<WIDTH>> in2; /// Terceira entrada
     sc_in<sc_uint<2>> sel; /// Seletor de entrada
 
     // Saidas
-    sc_out<sc_int<32>> out; /// Saída selecionada
+    sc_out<sc_uint<WIDTH>> out; /// Saída selecionada
 
     void process_mux() {
         switch (sel.read()) {
@@ -33,7 +34,8 @@ SC_MODULE(MUX_3) {
         }
     }
 
-    SC_CTOR(MUX_3) {
+    SC_HAS_PROCESS(MUX_3);
+    MUX_3(sc_core::sc_module_name name) : sc_core::sc_module(name) {
         SC_METHOD(process_mux);
         sensitive << in0 << in1 << in2 << sel;
     }
@@ -42,7 +44,7 @@ SC_MODULE(MUX_3) {
 #ifndef MODO_TESTE
 // Simulacao
 int sc_main(int argc, char* argv[]) {
-    sc_signal<sc_int<32>> in0, in1, in2, out;
+    sc_signal<sc_uint<32>> in0, in1, in2, out;
     sc_signal<sc_uint<2>> sel;
 
     MUX_3 mux("mux");

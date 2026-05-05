@@ -26,22 +26,27 @@ make
 
 ## 🧪 Executando os Testes
 
-O CMake irá procurar automaticamente por todos os arquivos `test_*.cpp` e compilar seus executáveis dentro do diretório `build`.
+O CMake irá procurar automaticamente por todos os arquivos `test_*.cpp` e compilar seus executáveis dentro do diretório `build/`.
 
-**Executar todos os testes automaticamente:**
-Estando no diretório `build/`, você pode utilizar o CTest para verificar rapidamente todos os componentes:
+**1. Executar o teste completo do Processador (Pipeline):**
+O teste principal simula o processador completo carregando um programa binário. É recomendável executá-lo a partir da **raiz do projeto** para que ele encontre o arquivo `test_program.bin`:
 ```bash
-ctest
-# ou
-make test
+./build/test_processor
 ```
 
-**Executar um teste individual com saída detalhada:**
-Se quiser ver os *logs*, falhas (assertions) e os valores de saída no terminal, basta executar o binário do teste desejado:
+**2. Executar testes unitários individuais:**
+Se quiser testar componentes isolados (ULA, Unidade de Controle, etc.):
 ```bash
-./test_ula
-./test_uc
-# ./test_<nome_do_componente>
+./build/test_ula
+./build/test_uc
+# ./build/test_<nome_do_componente>
+```
+
+**3. Executar todos os testes automaticamente:**
+Você pode utilizar o **CTest** para verificar rapidamente se todos os componentes estão funcionando:
+```bash
+cd build
+ctest
 ```
 
 ## 📊 Gerando e Visualizando as Simulações (.vcd)
@@ -59,7 +64,7 @@ g++ src/PO/ula.cpp -lsystemc -o sim_ula
 ```bash
 ./sim_ula
 ```
-Esse comando vai rodar a simulação e criar um arquivo `.vcd` (ex: `simulation.vcd` ou `simulation_ula.vcd`, dependendo do nome definido no código `sc_create_vcd_trace_file`).
+Esse comando vai rodar a simulação e criar um arquivo `.vcd` (ex: `processor_simulation.vcd`, `simulation.vcd` ou `simulation_ula.vcd`, dependendo do nome definido no código `sc_create_vcd_trace_file`).
 
 **3. Visualizar a simulação no GTKWave:**
 Abra o arquivo gerado com o GTKWave:
